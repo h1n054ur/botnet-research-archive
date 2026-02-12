@@ -1,0 +1,284 @@
+---
+title: "Evolution Timeline"
+description: "From sdBot (2002) to Zeus (2009) - the complete malware evolution arc across all specimen families"
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="note">
+This timeline synthesizes findings from all five research documents. It traces the complete evolutionary arc from the simplest IRC bots to commercial HTTP-based crimeware, including supporting ecosystem tools like exploit kits, stealers, and crypters. All specimens referenced are from the [archived collection](https://github.com/maestron/botnets).
+</Aside>
+
+## Overview
+
+The collection spans approximately seven years of malware development (2002–2009), documenting a transformation from hobbyist single-file IRC bots to industrialized, commercially sold crimeware toolkits. This timeline identifies the key specimens, milestones, and paradigm shifts that defined each period.
+
+```
+sdBot ──► spyBot ──► rBot ──► rxBot ──► NZM ──► 120-Series
+(2002)    (2003)    (2004)   (2004)    (2005)   (2007)
+                                                         ──► Zeus (2009)
+                                                              [paradigm shift]
+```
+
+---
+
+## 2001–2002: The Archetype Era
+
+### Key Specimens
+| Specimen | Author | Language | Significance |
+|----------|--------|----------|-------------|
+| **sdBot 0.4b** | [sd] | C | The foundational IRC bot archetype |
+
+### Milestones
+
+**sdBot 0.4b** - the earliest specimen in the collection - establishes the template that every IRC bot in this archive inherits. Written as a single monolithic C file (`sdbot04b.c`), it demonstrates:
+
+- **IRC-based C2**: Connects to a hardcoded IRC server/channel and awaits commands via `PRIVMSG`
+- **Basic command set**: `udp`/`ping` (DoS), `download`/`update` (payload delivery), `sysinfo`, `redirect` (TCP proxy)
+- **Persistence**: Self-copy to Windows System directory + `RunServices` registry key
+- **Simplicity**: Global variables, procedural flow, no encryption, no evasion - pure functionality
+
+The UPnP buffer overflow exploit (**CVE-2001-0876**, MS01-059) is among the earliest CVEs exploited by specimens in this collection, later integrated into the rBot family.
+
+### Defensive Context
+Defenders relied almost entirely on **signature-based detection** of compiled binaries and **blocking known malicious IRC servers** at the network perimeter. This was sufficient - for now.
+
+---
+
+## 2003: Capability Explosion
+
+### Key Specimens
+| Specimen | Author | Language | Key Innovation |
+|----------|--------|----------|---------------|
+| **sdBot 0.5a/0.5b** | [sd] | C | Backup C2 server, `visit` command |
+| **spyBot 1.1–1.4** | Mich | C | Keylogging, credential theft, IM spreading |
+| **Tesla SYN mod** | Community | C | Enhanced DDoS capabilities |
+| **Phatbot / Agobot** | Community | C++ | P2P C2 (WASTE protocol), polymorphism, RSA auth |
+| **PHP bots (pBot)** | Various | PHP | First web server-resident bots |
+
+### Milestones
+
+**sdBot 0.5b** introduced two critical innovations:
+1. **Backup C2 server** (`server2`/`port2`) - simple but transformative for resilience; taking down one server no longer killed the botnet
+2. **`visit` command** - the precursor to click-fraud bots, silently directing browsers to attacker-chosen URLs
+
+**spyBot 1.1–1.4** forked from sdBot and introduced entirely new threat categories:
+- **Keylogging** via `Set​Windows​HookEx` - the first information-stealing capability in the lineage
+- **Cached password theft** from browsers and FTP clients
+- **IM/P2P spreading** via Kazaa and MSN Messenger - weaponizing social trust
+- **Built-in HTTP server** for remote file browsing
+
+**Phatbot/Agobot** represented the most architecturally sophisticated bot in the collection:
+- **P2P command & control** via the WASTE protocol (port 24288) - no single point of failure
+- **Server-side polymorphic engine** (`polymorph.cpp`) - XOR/ROL/ROR encryption with random keys, making every copy unique
+- **RSA cryptographic authentication** for command verification
+- **Cross-platform build** (MSVC, Borland C++ 5, MinGW)
+
+**pBot** and other PHP bots emerged, shifting botnets from desktops to **compromised web servers** - high bandwidth, trusted IPs, persistent uptime.
+
+### Exploit Integration
+| CVE | MS Bulletin | Exploit | Target |
+|-----|------------|---------|--------|
+| CVE-2003-0352 | MS03-026 | DCOM RPC overflow | Port 135 |
+| CVE-2003-0715 | MS03-039 | DCOM second wave | Port 135 |
+| CVE-2003-0109 | MS03-007 | WebDAV/IIS 5.0 | Port 80 |
+| CVE-2003-0812 | MS03-049 | Workstation Service | Port 445 |
+| CVE-2003-0818 | MS04-007 | ASN.1 vulnerability | Various |
+| CVE-2003-1030 | N/A | DameWare overflow | Port 6129 |
+
+### Defensive Context
+The shift to keylogging and credential theft meant **network-based defenses alone were insufficient**. Host-based intrusion detection (HIDS) and personal firewalls had to evolve to detect suspicious API calls like `Set​Windows​HookEx`. The emergence of P2P C2 challenged the "take down the server" model for the first time.
+
+---
+
+## 2004: The rxBot Revolution
+
+### Key Specimens
+| Specimen | Author | Language | Key Innovation |
+|----------|--------|----------|---------------|
+| **rBot 0.2** | Nils, D3ADLiN3, Edge, bohika, rewe | C++ | Fork from sdBot, consolidated exploits |
+| **rx_dev (rBot 041504)** | RacerX90 | C++ | Modular architecture, dynamic API loading |
+| **rxBot 0.6.5–0.6.6d** | RacerX90 | C++ | GPL licensing, LSA restriction, FTP capability |
+| **BlowSXT** | Community | C++ | Blowfish-encrypted C2, IDS evasion |
+| **Named mods** | Various | C++ | EcLiPsE, Xerion, Undertow, Temptation |
+
+### The rx_dev Watershed (March–April 2004)
+
+The `rx_dev/rBot_041504` specimen is the **single most historically significant variant** in the collection. RacerX90's private development tree contains a 682-line changelog spanning just 22 days (March 24 – April 14, 2004), documenting a complete architectural transformation:
+
+1. **Module separation** - Monolithic `rBot.cpp` (2,900+ lines) split into ~90 `.cpp/.h` file pairs
+2. **Dynamic DLL loading** - All API calls converted from static linking to `LoadLibrary`/`GetProcAddress` (prefixed with `f`, e.g., `fWSAStartup`) - evades import table analysis
+3. **Unified thread management** - Centralized `THREAD` structure array with `clearthread()`
+4. **Exploit statistics system** - Universal tracking of scan/exploit success rates
+5. **SEH-based exception handler** - Crash recovery preventing bot death from exploit failures
+
+### Command Framework Maturation
+The command set grew from ~20 commands (rBot 0.2) to 50+ with namespace prefixes:
+- `irc.*` - IRC operations
+- `root.*` - Exploitation
+- `ddos.*` - DDoS attacks
+- `daemon.*` - Services (SOCKS, HTTPD, TFTP)
+- `com.*` - Data theft (harvest, keylog, capture, findpass)
+
+### Exploit Integration
+| CVE | MS Bulletin | Exploit | Added |
+|-----|------------|---------|-------|
+| CVE-2003-0533 | MS04-011 | LSASS buffer overflow | April 2004 |
+| CVE-2003-0719 | MS04-011 | IIS 5.0 SSL/PCT overflow | April 2004 |
+| CVE-2002-1123 | MS02-056 | MSSQL brute-force | March 25, 2004 |
+
+### Defensive Context
+The dynamic API resolution technique rendered **static import table analysis** unreliable. BlowSXT's Blowfish encryption and non-printable command prefix (`\xBB`) forced IDS vendors to move beyond simple pattern matching for IRC traffic detection.
+
+---
+
+## 2005: Structural Maturity
+
+### Key Specimens
+| Specimen | Author | Language | Key Innovation |
+|----------|--------|----------|---------------|
+| **NZM series** | Community | C++ | Directory-based module organization, MD5 auth |
+| **AkBot** | Community | C++ | DNS SRV record C2 resolution, XOR config encryption |
+| **Reptile** | Community | C++ | FU rootkit driver for kernel-mode process hiding |
+| **NinjaBot** | Community | Delphi | Bot-to-bot cooperative spreading, honeypot detection |
+| **Darkness Bot** | Community | C/C++ | USB spreading, MySpace social vector |
+| **wworm2 (WoodWorm)** | Community | Delphi | Polymorphic engine, torrent seeding as spreading vector |
+
+### NZM: The Clean Fork (April 2005)
+
+NZM restructured the entire rxBot codebase into a proper directory hierarchy - the first professionally organized malware project in the lineage:
+
+```
+cpp/core/      cpp/exploits/     cpp/modules/
+cpp/ddos/      cpp/scan/         cpp/xfer/
+headers/       config/           doc/
+```
+
+Added PnP (MS05-039), WKSSVC, ASN.1, WINS, and RealCast exploits. Introduced MD5-protected command authentication.
+
+### New Exploit Integration
+| CVE | MS Bulletin | Exploit | Target |
+|-----|------------|---------|--------|
+| CVE-2005-1983 | MS05-039 | Plug-and-Play overflow | Port 445 |
+| CVE-2003-0812 | MS03-049 | Workstation Service (added to NZM) | Port 445 |
+| CVE-2003-0818 | MS04-007 | ASN.1 (added to NZM) | Various |
+
+### Notable Innovations
+- **AkBot**: DNS SRV record resolution for C2 - a precursor to modern domain-generation algorithms
+- **Reptile**: Kernel-mode rootkit (FU driver) - first specimen in collection operating at Ring 0
+- **NinjaBot**: Only Delphi-based bot; featured cooperative bot-to-bot spreading and a built-in **honeypot detector** to avoid security researchers
+- **wworm2**: Polymorphic engine (`polyengine.pas`) with seeded XOR + Base64 + XOR layering, plus torrent seeding via uTorrent UI automation
+
+### Defensive Context
+The FU rootkit in Reptile proved that host-based security tools running in userspace could be completely bypassed. This drove investment in **kernel-mode security** and rootkit detection tools. NinjaBot's honeypot detection showed adversaries actively studying defender infrastructure.
+
+---
+
+## 2006–2007: Operational Optimization & Industrialization
+
+### Key Specimens
+| Specimen | Author | Language | Key Innovation |
+|----------|--------|----------|---------------|
+| **120-Series (RX-120)** | BuZ | C++ | Operational optimization, full string encryption |
+| **SDX.amk.0x00** | Community | C++ | OOP rewrite of sdBot lineage |
+| **CYBERBOT** | DreamWoRK | C++ | Stripped rxBot for stability |
+| **Fragus** | Commercial | PHP | Affiliate-based exploit kit SaaS |
+| **IcePack IE7 mod** | Commercial | PHP | GeoIP + browser fingerprinting exploit delivery |
+| **Fiesta3** | Commercial | PHP | PDF/Flash exploit delivery |
+| **iStealer5** | Commercial | VB6/C | Builder-stub credential stealer |
+| **DynastryCrypter** | Commercial | C++/PHP | Crypter with PHP licensing backend |
+| **hydra-2008.1** | Community | C | MIPSEL cross-compiled IoT botnet precursor |
+
+### The 120-Series: Peak IRC Bot Evolution (2007)
+
+With 22 variants building incrementally, the 120-Series represents the **operational apex** of the IRC botnet lineage:
+
+- **Full string encryption** - All configuration data encrypted at rest
+- **Abbreviated filenames** - Minimal footprint on disk
+- **Bot-killer module** - Whitelist of 300+ legitimate Windows executables; kill everything else
+- **SP2 patcher** - Modifies Windows XP SP2 security features
+- **Scanner subdirectory** - Organized exploit scanning infrastructure
+- **MySQL brute-force + UDF injection** - Database server targeting
+- **VNC brute-force** - Remote desktop compromise
+
+### New Exploit Integration
+| CVE | MS Bulletin | Exploit | Target |
+|-----|------------|---------|--------|
+| CVE-2006-3439 | MS06-040 | NetAPI Server Service overflow | Port 445 |
+| CVE-2006-2630 | N/A | Symantec Client Security overflow | Port 2967 |
+| CVE-2007-5659 | N/A | Adobe Reader Collab​.collect​Email​Info | PDF files |
+
+### The Industrialization Wave (2007–2009)
+
+This period marks the transformation of malware from a hobby to an organized criminal enterprise:
+
+| Tool Type | Specimen | Business Model |
+|-----------|----------|---------------|
+| **Exploit Kit** | Fragus | Affiliate/PPI - sellers tracked per-infection revenue |
+| **Exploit Kit** | IcePack | License-based - sold on underground forums |
+| **Exploit Kit** | Fiesta3 | License-based - PDF/Flash drive-by attacks |
+| **Stealer** | iStealer5 | Builder-stub model - GUI config, no coding needed |
+| **Crypter** | DynastryCrypter | SaaS - PHP licensing backend, subscription model |
+
+### hydra-2008.1: The IoT Prophecy
+
+Eight years before Mirai, **hydra-2008.1** targeted D-Link routers using MIPSEL cross-compilation (`mipsel-uclibc-gcc`). Its two-stage infection via Telnet brute-force and `wget` payload delivery is conceptually almost identical to Mirai's approach. This specimen proves IoT botnet threats were understood - and ignored - long before the 2016 crisis.
+
+### Defensive Context
+The commercialization of exploit kits forced the security industry beyond simple payload signatures into **reputation-based systems**, WAFs, and IPS rules targeting exploit delivery chains. The builder-stub model (iStealer) and commercial crypters (DynastryCrypter) created an **AV arms race** that made behavioral analysis mandatory.
+
+---
+
+## 2009: The HTTP Paradigm Shift
+
+### Key Specimens
+| Specimen | Author | Language | Key Innovation |
+|----------|--------|----------|---------------|
+| **Zeus / Zbot** (4 versions) | Slavik (Bogachev) | C++/PHP | HTTP-based C2, browser hooking, web injects |
+
+### Zeus: A New Architecture
+
+Zeus abandoned every convention of the IRC bot lineage:
+
+| Dimension | IRC Bots (sdBot → 120-Series) | Zeus |
+|-----------|-------------------------------|------|
+| **Protocol** | Persistent IRC connection | Stateless HTTP POST polling |
+| **Encryption** | None → Blowfish (late) | RC4 + MD5 on all payloads from day one |
+| **Data handling** | Unstructured IRC messages | MySQL database, searchable via web panel |
+| **Administration** | CLI via IRC client | Full web GUI with role-based access control |
+| **Targeting** | Broad (DDoS, spam, spreading) | Precise (bank-specific injects, per-country scripts) |
+| **Detection** | IRC on non-standard ports | Blends with normal HTTPS traffic |
+| **Business model** | Free/open-source modifications | Commercial kit sold on underground forums |
+
+### Key Zeus Innovations
+- **Man-in-the-Browser (MitB)**: Hooks `wininet.dll` between SSL decryption and page rendering - modifies HTTPS content after decryption
+- **Web inject system**: Targeted HTML/JS injection against 100+ financial institutions (Bank of America, Barclays, HSBC, PayPal, etc.)
+- **Builder tool**: GUI for compiling custom bot binaries + encrypted configs without touching code
+- **BackConnect server**: Reverse SOCKS/RDP tunnels through infected machines
+- **RC4 + TLV binary protocol**: All communications encrypted with integrity verification
+
+### Impact
+- **FBI estimated $100M+ in US losses alone**
+- Millions of compromised machines at peak
+- Operation Trident Breach (2010): 100+ arrests
+- Developer Evgeniy Bogachev: $3M FBI bounty
+- Source leak (2011) spawned: Citadel, ICE IX, GameOver Zeus, KINS/ZeusVM, Sphinx
+
+### Defensive Context
+Zeus forced a complete rethinking of endpoint security. Traditional antivirus was insufficient against browser-hooking MitB attacks. The industry responded with **browser hardening**, **two-factor authentication mandates**, **behavioral banking fraud detection**, and the first serious **threat intelligence sharing** programs between financial institutions.
+
+---
+
+## Summary: Seven Years of Evolution
+
+| Year | Key Milestone | Paradigm |
+|------|--------------|----------|
+| 2002 | sdBot 0.4b - the IRC bot archetype | Hobbyist, single-file |
+| 2003 | spyBot adds keylogging + credential theft; Phatbot adds P2P C2 | Capability explosion |
+| 2004 | rxBot modularizes architecture; BlowSXT adds encryption | Professionalization |
+| 2005 | NZM restructures codebase; rootkits emerge | Structural maturity |
+| 2007 | 120-Series peaks IRC bots; exploit kits commercialize | Operational optimization |
+| 2008 | Hydra targets IoT routers (MIPSEL) | IoT precursor |
+| 2009 | Zeus introduces HTTP C2, web injects, commercial model | Industry-scale crimeware |
+
+The arc from sdBot to Zeus is not merely technical evolution - it mirrors the transformation of cybercrime from a subculture into an organized criminal industry, complete with specialization, supply chains, and commercial business models.

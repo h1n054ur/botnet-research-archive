@@ -1,0 +1,64 @@
+---
+title: Botnet Research Archive
+description: Educational documentation and academic analysis of historical botnet source code (2002-2009)
+template: splash
+hero:
+  tagline: "University-level academic analysis of 369 historical malware specimens. Defensive research only - zero malicious code hosted."
+  actions:
+    - text: Start Reading
+      link: /botnet-research-archive/families/rbot-rxbot/
+      icon: right-arrow
+    - text: Original Source Repo
+      link: https://github.com/maestron/botnets
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+## // ARCHIVE_OVERVIEW
+
+This project provides **comprehensive educational documentation** of a publicly available collection of historical botnet source code spanning **2002 to 2009**. All analysis is conducted for academic purposes with a focus on **defensive cybersecurity** and **MITRE ATT&CK mapping**.
+
+:::caution[Educational Purposes Only]
+This archive contains NO executable code. All source references link to the [original public repository](https://github.com/maestron/botnets). This documentation exists to help security researchers, students, and educators understand historical cyber threats for **defensive purposes only**.
+:::
+
+## // COLLECTION_STATS
+
+<CardGrid>
+  <Card title="369 Specimens" icon="document">
+    Total directories in the VirusPack collection spanning 7+ years of malware development
+  </Card>
+  <Card title="9 Major Families" icon="list-format">
+    rBot/rxBot, sdBot/spyBot, Phatbot/Agobot, Zeus, NZM, AkBot, Darkness, CYBERBOT, Reptile
+  </Card>
+  <Card title="~250 Unique Samples" icon="puzzle">
+    After removing ~110 confirmed duplicates and revision copies
+  </Card>
+  <Card title="8+ Languages" icon="setting">
+    C, C++, Java, PHP, Delphi, VB6, Perl, Assembly - across Windows, Linux, and embedded platforms
+  </Card>
+</CardGrid>
+
+## // QUICK_NAV
+
+<CardGrid>
+  <LinkCard title="rBot/rxBot Family" description="The largest family - 121 specimens tracing IRC bot evolution from 2004-2008" href="/botnet-research-archive/families/rbot-rxbot/" />
+  <LinkCard title="Zeus Banking Trojan" description="The paradigm shift from IRC to HTTP - commercial crimeware that changed everything" href="/botnet-research-archive/families/zeus/" />
+  <LinkCard title="Evolution Timeline" description="From sdBot (2002) to Zeus (2009) - how malware evolved over 7 years" href="/botnet-research-archive/analysis/evolution-timeline/" />
+  <LinkCard title="Defensive Lessons" description="What the security industry learned from each generation of threats" href="/botnet-research-archive/analysis/defensive-lessons/" />
+</CardGrid>
+
+## // METHODOLOGY
+
+All analysis was performed through **source-level code inspection** of the archived specimens. Techniques are mapped to the [MITRE ATT&CK Framework](https://attack.mitre.org/) throughout. No code was compiled or executed during research.
+
+```
+$ cat /proc/research/approach
+METHOD: Static source analysis
+TARGET: github.com/maestron/botnets
+SCOPE:  369 directories, ~250 unique specimens
+OUTPUT: Academic documentation with defensive focus
+STATUS: ACTIVE
+```

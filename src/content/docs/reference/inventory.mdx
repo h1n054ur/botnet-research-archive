@@ -1,0 +1,422 @@
+---
+title: "Complete Specimen Inventory"
+description: "Comprehensive catalogue of all ~250 unique specimens across 369 directories, organized by family and category"
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="Educational Resource">
+This inventory catalogues historical botnet source code for **academic research only**. All links point to the [maestron/botnets](https://github.com/maestron/botnets) archival repository. No binaries are hosted or distributed by this project.
+</Aside>
+
+## Summary Statistics
+
+| Metric | Value |
+|---|---|
+| **Total directories** | 369 |
+| **Estimated unique specimens** | ~250–260 |
+| **Duplicates / near-copies removed** | ~110 |
+| **Distinct families / categories** | 18 |
+| **Languages represented** | C, C++, Delphi, Java, PHP, VB6, Perl, ASM |
+| **Date range** | ~2002–2009 |
+| **Dominant family** | rBot / rxBot (121 dirs, ~93 unique) |
+
+### Language Breakdown
+
+| Language | Specimen Count | Typical Use |
+|---|---|---|
+| C++ | ~160 | Win32 IRC bots (rBot, sdBot, Phatbot) |
+| C | ~30 | Linux bots, DDoS tools, low-level exploits |
+| PHP | ~12 | Web server bots, exploit pack panels, Zeus panels |
+| Delphi | ~10 | NinjaBot, worms, stealers |
+| VB6 | ~8 | Stealers, crypters |
+| Java | ~5 | Cross-platform IRC bots |
+| Perl | ~3 | Scanners, RFI tools |
+| ASM | embedded | Shellcode, PE crypters |
+
+---
+
+## Family 1 - rBot / rxBot (121 dirs, ~93 unique)
+
+The largest and most influential IRC botnet codebase in the collection. Originated March 2004 by Nils, D3ADLiN3, Edge, bohika, rewe; later developed by RacerX90 into rxBot. C++ on Win32, IRC-based C&C.
+
+**Aggregated capabilities:** DCOM/LSASS/ASN.1/NetAPI/PnP/Symantec exploits · SYN/TCP/ICMP/UDP/ACK DDoS · MSN/AIM/Yahoo/USB spreading · keylogger · packet sniffer · SOCKS4/5 proxy · CD key theft · AV killer · registry persistence.
+
+### rBot Original Base (v0.2–0.3)
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 1 | [rbot-0.2a](https://github.com/maestron/botnets/tree/master/VirusPack/rbot-0.2a) | IRC Bot | C++ | DCOM exploit, SYN flood, basic scanner | 2004 |
+| 2 | [rbot-0.2b](https://github.com/maestron/botnets/tree/master/VirusPack/rbot-0.2b) | IRC Bot | C++ | LSASS exploit added, TFTP server | 2004 |
+| 3 | [rbot-0.3](https://github.com/maestron/botnets/tree/master/VirusPack/rbot-0.3) | IRC Bot | C++ | ASN.1 exploit, multi-server failover | 2004 |
+| 4 | [rbot-0.3.2b-priv](https://github.com/maestron/botnets/tree/master/VirusPack/rbot-0.3.2b-priv) | IRC Bot | C++ | PnP exploit, registry persistence | 2004 |
+| 5 | [rBot Modded by Squirrel](https://github.com/maestron/botnets/tree/master/VirusPack/rBot%20Modded%20by%20Squirrel) | IRC Bot | C++ | Community mod, AIM/MSN spread | 2004 |
+| 6 | [rbot021](https://github.com/maestron/botnets/tree/master/VirusPack/rbot021) | IRC Bot | C++ | Base rBot v0.2.1, minimal variant | 2004 |
+| 7 | [rBot v.02 mod](https://github.com/maestron/botnets/tree/master/VirusPack/rBot%20v.02%20mod) | IRC Bot | C++ | Enhanced scanning, DDoS | 2004 |
+
+### rxBot Core Releases (v0.6.5–0.7.7)
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 8 | [rx_dev](https://github.com/maestron/botnets/tree/master/VirusPack/rx_dev) | IRC Bot | C++ | **Key specimen** - RacerX90's dev tree with full changelog | 2005 |
+| 9 | [rxBot-0.6.5](https://github.com/maestron/botnets/tree/master/VirusPack/rxBot-0.6.5) | IRC Bot | C++ | Modular architecture, Symantec exploit | 2005 |
+| 10 | [rxbot-0.6.5b](https://github.com/maestron/botnets/tree/master/VirusPack/rxbot-0.6.5b) | IRC Bot | C++ | Bug-fix release, stability improvements | 2005 |
+| 11 | [rxBot-v0.6.6b-priv](https://github.com/maestron/botnets/tree/master/VirusPack/rxBot-v0.6.6b-priv) | IRC Bot | C++ | Keylogger, packet sniffer | 2005 |
+| 12 | [rxBot 7.6 Modded](https://github.com/maestron/botnets/tree/master/VirusPack/rxBot%207.6%20Modded) | IRC Bot | C++ | Latest core version, full exploit suite | 2006 |
+| 13 | [rxBot-MP](https://github.com/maestron/botnets/tree/master/VirusPack/rxBot-MP) | IRC Bot | C++ | **Key specimen** - clean modular refactor | 2006 |
+| 14 | [rxbot0.6.6b+sYN](https://github.com/maestron/botnets/tree/master/VirusPack/rxbot0.6.6b%2BsYN) | IRC Bot | C++ | Enhanced SYN flood, SuperSYN | 2005 |
+
+### rxBot Named Mods
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 15 | [rxBot EcLiPsE](https://github.com/maestron/botnets/tree/master/VirusPack/rxBot%20EcLiPsE) | IRC Bot | C++ | EcLiPsE's mod, enhanced DDoS | 2005 |
+| 16 | [rxBot Xerion](https://github.com/maestron/botnets/tree/master/VirusPack/rxBot%20Xerion) | IRC Bot | C++ | Xerion mod, added USB spreader | 2006 |
+| 17 | [rxbot Undertow](https://github.com/maestron/botnets/tree/master/VirusPack/rxbot%20Undertow) | IRC Bot | C++ | Undertow mod, VNC brute force | 2006 |
+| 18 | [rxBot Temptation](https://github.com/maestron/botnets/tree/master/VirusPack/rxBot%20Temptation) | IRC Bot | C++ | Temptation mod, Yahoo IM spread | 2006 |
+| 19 | [rxBOT-stable](https://github.com/maestron/botnets/tree/master/VirusPack/rxBOT-stable) | IRC Bot | C++ | Stability-focused community release | 2006 |
+| 20 | [BlowSXT](https://github.com/maestron/botnets/tree/master/VirusPack/BlowSXT) | IRC Bot | C++ | **Key specimen** - detailed rBot→rxBot transition changelog | 2005 |
+
+### rXSass / LSASS Variants
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 21 | [rXSass](https://github.com/maestron/botnets/tree/master/VirusPack/rXSass) | IRC Bot | C++ | LSASS exploit focused, auto-spread | 2004 |
+| 22 | [rxbot-LSASS](https://github.com/maestron/botnets/tree/master/VirusPack/rxbot-LSASS) | IRC Bot | C++ | LSASS-only scanning variant | 2004 |
+
+### Urxbot / URX Variants
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 23 | [Urxbot](https://github.com/maestron/botnets/tree/master/VirusPack/Urxbot) | IRC Bot | C++ | Major fork, Symantec AV exploit, ASN.1 | 2005 |
+| 24 | [urx-0039](https://github.com/maestron/botnets/tree/master/VirusPack/urx-0039) | IRC Bot | C++ | URX build 39, network scanner | 2005 |
+| 25 | [urxbot](https://github.com/maestron/botnets/tree/master/VirusPack/urxbot) | IRC Bot | C++ | Base URX variant | 2005 |
+| 26 | [URX-120](https://github.com/maestron/botnets/tree/master/VirusPack/URX-120) | IRC Bot | C++ | URX with 120-series features | 2006 |
+
+### RX-120 Series (by BuZ)
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 27 | [120-Sbot](https://github.com/maestron/botnets/tree/master/VirusPack/120-Sbot) | IRC Bot | C++ | Modular rebuild, MySQL brute | 2007 |
+| 28 | [120-VNC](https://github.com/maestron/botnets/tree/master/VirusPack/120-VNC) | IRC Bot | C++ | VNC brute force + UDF injection | 2007 |
+| 29 | [120-MSSQL](https://github.com/maestron/botnets/tree/master/VirusPack/120-MSSQL) | IRC Bot | C++ | MSSQL brute + xp_cmdshell | 2007 |
+| 30 | [120-RFI](https://github.com/maestron/botnets/tree/master/VirusPack/120-RFI) | IRC Bot | C++ | Remote File Inclusion scanner | 2007 |
+| 31 | [120-Cisco](https://github.com/maestron/botnets/tree/master/VirusPack/120-Cisco) | IRC Bot | C++ | Cisco router scanner, SNMP | 2007 |
+
+### NZM Series
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 32 | [NZM](https://github.com/maestron/botnets/tree/master/VirusPack/NZM) | IRC Bot | C++ | Organized subdirs, MD5 command auth | 2005 |
+| 33 | [NZM-0.4e](https://github.com/maestron/botnets/tree/master/VirusPack/NZM-0.4e) | IRC Bot | C++ | Version 0.4e, P2P capability | 2006 |
+| 34 | [NZM3](https://github.com/maestron/botnets/tree/master/VirusPack/NZM3) | IRC Bot | C++ | Version 3, enhanced structure | 2006 |
+
+### Other Notable rBot/rxBot Derivatives
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 35 | [rbot-AIM](https://github.com/maestron/botnets/tree/master/VirusPack/rbot-AIM) | IRC Bot | C++ | AIM worm spreading module | 2005 |
+| 36 | [rBot-phatty](https://github.com/maestron/botnets/tree/master/VirusPack/rBot-phatty) | IRC Bot | C++ | Phatbot feature back-port | 2005 |
+| 37 | [rbot-USB](https://github.com/maestron/botnets/tree/master/VirusPack/rbot-USB) | IRC Bot | C++ | USB removable media spreading | 2006 |
+| 38 | [rbot-Email](https://github.com/maestron/botnets/tree/master/VirusPack/rbot-Email) | IRC Bot | C++ | Mass email spreading | 2005 |
+| 39 | [rxBot-SS](https://github.com/maestron/botnets/tree/master/VirusPack/rxBot-SS) | IRC Bot | C++ | Screenshot capture | 2006 |
+
+---
+
+## Family 2 - sdBot / spyBot (73 dirs, ~42 unique)
+
+The foundational IRC bot by author \[sd\], from which rBot itself was derived. Single-file C source originally compiled with LCC. Spans sdbot 0.4b through spyBot 1.4.
+
+**Aggregated capabilities:** Basic IRC C&C · SYN/UDP floods · NetBIOS brute · keylogger (spyBot) · HTTP download server (spyBot) · email spread · RAR infection.
+
+### sdBot Original (v0.4b–0.5b)
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 40 | [sdbot04b](https://github.com/maestron/botnets/tree/master/VirusPack/sdbot04b) | IRC Bot | C | Original by \[sd\], single-file, LCC | 2002 |
+| 41 | [sdbot05a](https://github.com/maestron/botnets/tree/master/VirusPack/sdbot05a) | IRC Bot | C | v0.5a, SYN flood, improved C&C | 2003 |
+| 42 | [sdbot05b](https://github.com/maestron/botnets/tree/master/VirusPack/sdbot05b) | IRC Bot | C | v0.5b, base for most forks | 2003 |
+| 43 | [SdBot V5 Tesla SYN Mod](https://github.com/maestron/botnets/tree/master/VirusPack/SdBot%20V5%20Tesla%20SYN%20Mod) | IRC Bot | C | Enhanced SYN flood by Tesla | 2003 |
+
+### sdBot Named Mods
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 44 | [sdbot-b0rg](https://github.com/maestron/botnets/tree/master/VirusPack/sdbot-b0rg) | IRC Bot | C | b0rg mod, stealth improvements | 2003 |
+| 45 | [sdbot-skbot](https://github.com/maestron/botnets/tree/master/VirusPack/sdbot-skbot) | IRC Bot | C | SK mod, added DCOM exploit | 2004 |
+| 46 | [sdbot-xdcc](https://github.com/maestron/botnets/tree/master/VirusPack/sdbot-xdcc) | IRC Bot | C | Fake XDCC file sharing | 2004 |
+| 47 | [sdbot-getadm](https://github.com/maestron/botnets/tree/master/VirusPack/sdbot-getadm) | IRC Bot | C | Admin credential harvester | 2004 |
+| 48 | [SDX](https://github.com/maestron/botnets/tree/master/VirusPack/SDX) | IRC Bot | C++ | OOP rewrite of sdBot, 2008 | 2008 |
+| 49 | [SBX](https://github.com/maestron/botnets/tree/master/VirusPack/SBX) | IRC Bot | C++ | OOP rewrite variant | 2008 |
+
+### spyBot (v1.1–1.4)
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 50 | [spybot1.1](https://github.com/maestron/botnets/tree/master/VirusPack/spybot1.1) | IRC Bot | C++ | By Mich, keylogger, HTTP server | 2003 |
+| 51 | [spybot1.2](https://github.com/maestron/botnets/tree/master/VirusPack/spybot1.2) | IRC Bot | C++ | USB spreading, multi-exploit | 2003 |
+| 52 | [spybot1.3](https://github.com/maestron/botnets/tree/master/VirusPack/spybot1.3) | IRC Bot | C++ | Email spread, AV killer | 2004 |
+| 53 | [spybot1.4](https://github.com/maestron/botnets/tree/master/VirusPack/spybot1.4) | IRC Bot | C++ | Final version, full feature set | 2004 |
+
+### sdBot-derived Offshoots
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 54 | [svBot](https://github.com/maestron/botnets/tree/master/VirusPack/svBot) | IRC Bot | C++ | Independent fork, same niche | 2005 |
+| 55 | [Sbot-RARSpreader](https://github.com/maestron/botnets/tree/master/VirusPack/Sbot-RARSpreader) | IRC Bot | C | RAR archive infection spreader | 2005 |
+
+---
+
+## Family 3 - Phatbot / Agobot / ForBot (12 dirs, ~10 unique)
+
+The most architecturally sophisticated family. P2P WASTE protocol C&C, polymorphic engine, RSA crypto command auth. Derived from Agobot3.
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 56 | [Phatbot](https://github.com/maestron/botnets/tree/master/VirusPack/Phatbot) | P2P/IRC Bot | C++ | **Key specimen** - P2P WASTE, polymorphic, RSA auth | 2003 |
+| 57 | [Agobot3](https://github.com/maestron/botnets/tree/master/VirusPack/Agobot3) | IRC Bot | C++ | Predecessor, modular exploit framework | 2003 |
+| 58 | [ForBot](https://github.com/maestron/botnets/tree/master/VirusPack/ForBot) | IRC Bot | C++ | Agobot derivative, DCOM/LSASS | 2004 |
+| 59 | [ForBot-Olin](https://github.com/maestron/botnets/tree/master/VirusPack/ForBot-Olin) | IRC Bot | C++ | Olin mod, NetAPI exploit | 2004 |
+| 60 | [ForBotSX](https://github.com/maestron/botnets/tree/master/VirusPack/ForBotSX) | IRC Bot | C++ | SX variant, enhanced scanning | 2005 |
+| 61 | [litmus](https://github.com/maestron/botnets/tree/master/VirusPack/litmus) | IRC Bot | C++ | Agobot-derived, SSL IRC | 2004 |
+| 62 | [OMEGA](https://github.com/maestron/botnets/tree/master/VirusPack/OMEGA) | IRC Bot | C++ | Agobot mod, Borland compiler | 2004 |
+
+---
+
+## Family 4 - AkBot (3 dirs, 3 unique)
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 63 | [AkBot](https://github.com/maestron/botnets/tree/master/VirusPack/AkBot) | IRC Bot | C++ | DNS SRV record C2, XOR config encryption | 2005 |
+| 64 | [AkBot-mod](https://github.com/maestron/botnets/tree/master/VirusPack/AkBot-mod) | IRC Bot | C++ | Community mod, LimeWire spreading | 2006 |
+| 65 | [AkBot-v2](https://github.com/maestron/botnets/tree/master/VirusPack/AkBot-v2) | IRC Bot | C++ | Version 2, improved evasion | 2007 |
+
+---
+
+## Family 5 - Darkness Bot (3 dirs, 2 unique)
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 66 | [Darkness](https://github.com/maestron/botnets/tree/master/VirusPack/Darkness) | IRC Bot | C | USB spread, MySpace spread, HTTP flood | 2005 |
+| 67 | [DarknessBot](https://github.com/maestron/botnets/tree/master/VirusPack/DarknessBot) | IRC Bot | C++ | Distinct codebase sharing name | 2009 |
+
+---
+
+## Family 6 - CYBERBOT (3 dirs, 2 unique)
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 68 | [CYBERBOT](https://github.com/maestron/botnets/tree/master/VirusPack/CYBERBOT) | IRC Bot | C++ | Stripped rxBot by DreamWoRK, stability-focused | 2006 |
+| 69 | [CYBERBOT-v2](https://github.com/maestron/botnets/tree/master/VirusPack/CYBERBOT-v2) | IRC Bot | C++ | Version 2, enhanced stealth | 2007 |
+
+---
+
+## Family 7 - Reptile (6 dirs, 5 unique)
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 70 | [Reptile](https://github.com/maestron/botnets/tree/master/VirusPack/Reptile) | IRC Bot | C++ | **Key specimen** - FU rootkit driver, kernel-mode hiding | 2005 |
+| 71 | [Reptile-v2](https://github.com/maestron/botnets/tree/master/VirusPack/Reptile-v2) | IRC Bot | C++ | Version 2, improved rootkit | 2005 |
+| 72 | [Reptile-mod](https://github.com/maestron/botnets/tree/master/VirusPack/Reptile-mod) | IRC Bot | C++ | Community mod, added DDoS | 2006 |
+
+---
+
+## Family 8 - NinjaBot (3 dirs, 1 unique)
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 73 | [NinjaBot](https://github.com/maestron/botnets/tree/master/VirusPack/NinjaBot) | IRC Bot | Delphi | **Key specimen** - only Delphi bot, cooperative bot-to-bot spreading, honeypot detection | 2005 |
+
+---
+
+## Zeus Banking Trojan (1 dir, 4 versions)
+
+Fundamentally different from IRC bots - HTTP-based C&C, browser hooking (MitB), web injects for banking fraud. Represents the paradigm shift from IRC botnets to commercial crimeware.
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 74 | [Zeus](https://github.com/maestron/botnets/tree/master/VirusPack/Zeus) | Banking Trojan | C++/PHP | **Key specimen** - HTTP C2, web injects (eBay, HSBC, Citibank), PHP panel, builder | 2009 |
+
+---
+
+## Java IRC Bots (5 dirs, 3 unique)
+
+Cross-platform bots leveraging Java runtime. Notable for platform independence.
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 75 | [Botnet](https://github.com/maestron/botnets/tree/master/VirusPack/Botnet) | IRC Bot | Java | **Key specimen** - account stealing, CD keys, USB/NetBIOS spread, RuneScape targeting | Mid-2000s |
+| 76 | [JavaIRCBot](https://github.com/maestron/botnets/tree/master/VirusPack/JavaIRCBot) | IRC Bot | Java | Basic Java IRC bot | Mid-2000s |
+| 77 | [JBot](https://github.com/maestron/botnets/tree/master/VirusPack/JBot) | IRC Bot | Java | Lightweight Java bot | Mid-2000s |
+
+---
+
+## PHP Bots (5 dirs, 4 unique)
+
+Lightweight bots designed for compromised web servers. Execute via PHP interpreter, no binary compilation needed.
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 78 | [pBot](https://github.com/maestron/botnets/tree/master/VirusPack/pBot) | IRC Bot | PHP | **Key specimen** - most widely known PHP bot, UDP flood, back-connect | Mid-2000s |
+| 79 | [phpBot](https://github.com/maestron/botnets/tree/master/VirusPack/phpBot) | IRC Bot | PHP | PHP-based IRC bot variant | Mid-2000s |
+| 80 | [UnixBot-2.2.5](https://github.com/maestron/botnets/tree/master/VirusPack/UnixBot-2.2.5) | IRC Bot | PHP | ElationBot, Unix web server targeting | Mid-2000s |
+| 81 | [PHP%20Botnet](https://github.com/maestron/botnets/tree/master/VirusPack/PHP%20Botnet) | IRC Bot | PHP | PHP botnet kit | Mid-2000s |
+
+---
+
+## Stealers (4 dirs, 4 unique)
+
+Credential and data theft tools. Focused on harvesting stored passwords and financial information.
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 82 | [Dwighlight_Stealer](https://github.com/maestron/botnets/tree/master/VirusPack/Dwighlight_Stealer) | Stealer | Delphi | IE7 passwords, Protected Storage | 2008 |
+| 83 | [iStealer](https://github.com/maestron/botnets/tree/master/VirusPack/iStealer) | Stealer | VB6/C | Multi-browser credential theft, FTP creds | 2007 |
+| 84 | [CC.Trojan.EMAIL3](https://github.com/maestron/botnets/tree/master/VirusPack/CC.Trojan.EMAIL3) | Phishing | VB6 | Fake Windows activation, credit card phishing | 2009 |
+| 85 | [PassStealer](https://github.com/maestron/botnets/tree/master/VirusPack/PassStealer) | Stealer | C | Password harvesting tool | 2007 |
+
+---
+
+## Crypters & Packers (9 dirs, 7 unique)
+
+PE encryption and obfuscation tools used to make malware "FUD" (Fully Undetectable) by AV engines.
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 86 | [DynastryCrypterSource](https://github.com/maestron/botnets/tree/master/VirusPack/DynastryCrypterSource) | Crypter | C++ | **Key specimen** - enterprise PHP licensing backend, stub engine | Mid-2000s |
+| 87 | [SPKRYPT](https://github.com/maestron/botnets/tree/master/VirusPack/SPKRYPT) | Crypter | VB6 | Source-level VB6 obfuscation | Mid-2000s |
+| 88 | [SPKRYPT2](https://github.com/maestron/botnets/tree/master/VirusPack/SPKRYPT2) | Crypter | VB6 | Version 2, improved obfuscation | Mid-2000s |
+| 89 | [Crypter](https://github.com/maestron/botnets/tree/master/VirusPack/Crypter) | Crypter | C++ | PE section encryption | Mid-2000s |
+| 90 | [PE-Crypt](https://github.com/maestron/botnets/tree/master/VirusPack/PE-Crypt) | Packer | C++/ASM | PE packer with anti-debug | Mid-2000s |
+| 91 | [UPack](https://github.com/maestron/botnets/tree/master/VirusPack/UPack) | Packer | C | Runtime packer | Mid-2000s |
+
+---
+
+## Worms (6 dirs, 6 unique)
+
+Standalone propagation-focused malware. Primary goal is self-replication across networks and removable media.
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 92 | [w32.ogw0rm](https://github.com/maestron/botnets/tree/master/VirusPack/w32.ogw0rm) | Worm | C++ | **Key specimen** - spreads via 7 IM clients simultaneously | Mid-2000s |
+| 93 | [IrcWorm](https://github.com/maestron/botnets/tree/master/VirusPack/IrcWorm) | Worm | C++ | IRC DCC spreading, custom RAR packer | Mid-2000s |
+| 94 | [wworm2](https://github.com/maestron/botnets/tree/master/VirusPack/wworm2) | Worm | C++ | WoodWorm - polymorphic engine, torrent seeding | Mid-2000s |
+| 95 | [T_Worm](https://github.com/maestron/botnets/tree/master/VirusPack/T_Worm) | Worm | Delphi | 5-language Yahoo IM spreading | Mid-2000s |
+| 96 | [netWorm](https://github.com/maestron/botnets/tree/master/VirusPack/netWorm) | Worm | C | Network share spreading | Mid-2000s |
+| 97 | [USBWorm](https://github.com/maestron/botnets/tree/master/VirusPack/USBWorm) | Worm | Delphi | USB removable media propagation | Mid-2000s |
+
+---
+
+## RATs - Remote Access Trojans (3 dirs, 2 unique)
+
+Full-featured remote administration tools with extensive surveillance capabilities.
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 98 | [FBIRAT](https://github.com/maestron/botnets/tree/master/VirusPack/FBIRAT) | RAT | C++ | **Key specimen** - webcam, screen capture, keylog, packet sniffer | Mid-2000s |
+| 99 | [AryanRat](https://github.com/maestron/botnets/tree/master/VirusPack/AryanRat) | RAT | C++ | UPnP NAT traversal, reverse connection | Mid-2000s |
+
+---
+
+## DDoS Bots (7 dirs, 7 unique)
+
+Dedicated denial-of-service tools. Includes an early IoT botnet precursor.
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 100 | [hydra-2008.1](https://github.com/maestron/botnets/tree/master/VirusPack/hydra-2008.1) | DDoS Bot | C | **Key specimen** - MIPSEL cross-compiled, D-Link router targeting, IoT precursor (8 yrs before Mirai) | 2008 |
+| 101 | [DDoSBot](https://github.com/maestron/botnets/tree/master/VirusPack/DDoSBot) | DDoS Bot | C | SYN/UDP/ICMP flood | 2005 |
+| 102 | [Flooder](https://github.com/maestron/botnets/tree/master/VirusPack/Flooder) | DDoS Tool | C | Multi-protocol flood tool | Mid-2000s |
+| 103 | [SYNFlood](https://github.com/maestron/botnets/tree/master/VirusPack/SYNFlood) | DDoS Tool | C | Raw socket SYN flood | Mid-2000s |
+| 104 | [UDPFlood](https://github.com/maestron/botnets/tree/master/VirusPack/UDPFlood) | DDoS Tool | C | UDP flood, spoofed source | Mid-2000s |
+| 105 | [Tsunami](https://github.com/maestron/botnets/tree/master/VirusPack/Tsunami) | DDoS Bot | C | Linux IRC-based DDoS bot | Mid-2000s |
+| 106 | [kaiten](https://github.com/maestron/botnets/tree/master/VirusPack/kaiten) | DDoS Bot | C | Classic Linux IRC flooder | Mid-2000s |
+
+---
+
+## Exploit Packs (4 dirs, 4 unique)
+
+Drive-by download frameworks. Serve exploits to visitors via compromised or malicious websites.
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 107 | [fragus](https://github.com/maestron/botnets/tree/master/VirusPack/fragus) | Exploit Kit | PHP | **Key specimen** - commercial-grade, 8 browser exploits, statistics panel | 2009 |
+| 108 | [ICEPack](https://github.com/maestron/botnets/tree/master/VirusPack/ICEPack) | Exploit Kit | PHP | IE7 mod, ActiveX exploits | 2008 |
+| 109 | [Fiesta3](https://github.com/maestron/botnets/tree/master/VirusPack/Fiesta3) | Exploit Kit | PHP | Fiesta exploit pack v3 | 2008 |
+| 110 | [my_poly_sploit](https://github.com/maestron/botnets/tree/master/VirusPack/my_poly_sploit) | Exploit Kit | PHP/JS | Polymorphic shellcode, multi-browser heap spray | 2008 |
+
+---
+
+## Unique / Standalone Bots (11 dirs, 11 unique)
+
+Specimens that don't belong to a larger family. Each has distinctive characteristics.
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 111 | [STEAMBOT](https://github.com/maestron/botnets/tree/master/VirusPack/STEAMBOT) | IRC Bot | C++ | **Key specimen** - exploits Steam Miles Sound System plugin loading | Mid-2000s |
+| 112 | [Beast%20Bot%206.2](https://github.com/maestron/botnets/tree/master/VirusPack/Beast%20Bot%206.2) | IRC Bot | C++ | Multi-vector spreader, prolific infection rate | Mid-2000s |
+| 113 | [hdbotv0.2](https://github.com/maestron/botnets/tree/master/VirusPack/hdbotv0.2) | IRC Bot | C | Cisco router scanner, infrastructure targeting | Mid-2000s |
+| 114 | [Q8Bot](https://github.com/maestron/botnets/tree/master/VirusPack/Q8Bot) | IRC Bot | C | Lightweight Unix IRC bot | Mid-2000s |
+| 115 | [EnergyMech](https://github.com/maestron/botnets/tree/master/VirusPack/EnergyMech) | IRC Bot | C | Classic IRC eggdrop-style bot, repurposed | Mid-2000s |
+| 116 | [Evilbot](https://github.com/maestron/botnets/tree/master/VirusPack/Evilbot) | IRC Bot | C | Unix DDoS bot | Mid-2000s |
+| 117 | [UrbanBot](https://github.com/maestron/botnets/tree/master/VirusPack/UrbanBot) | IRC Bot | C++ | Custom bot with HTTP download | Mid-2000s |
+| 118 | [Microbot](https://github.com/maestron/botnets/tree/master/VirusPack/Microbot) | IRC Bot | C | Minimal-footprint bot | Mid-2000s |
+| 119 | [Leechbot](https://github.com/maestron/botnets/tree/master/VirusPack/Leechbot) | IRC Bot | C++ | File download/leech bot | Mid-2000s |
+| 120 | [DSKBot](https://github.com/maestron/botnets/tree/master/VirusPack/DSKBot) | IRC Bot | C++ | Standalone IRC bot | Mid-2000s |
+| 121 | [Perlbot](https://github.com/maestron/botnets/tree/master/VirusPack/Perlbot) | IRC Bot | Perl | Perl-based IRC bot, Unix targeting | Mid-2000s |
+
+---
+
+## Tools & Utilities (5 dirs, 5 unique)
+
+Supporting tools from the malware ecosystem - not malware themselves, but used alongside botnets.
+
+| # | Sample Name | Type | Language | Key Capabilities | Era |
+|---|---|---|---|---|---|
+| 122 | [gmail-account-creator](https://github.com/maestron/botnets/tree/master/VirusPack/gmail-account-creator) | Utility | Various | Automated Gmail account creation | Mid-2000s |
+| 123 | [RFI-Scanner](https://github.com/maestron/botnets/tree/master/VirusPack/RFI-Scanner) | Scanner | Perl | Remote File Inclusion scanner, Google dorks | Mid-2000s |
+| 124 | [PsyProxy](https://github.com/maestron/botnets/tree/master/VirusPack/PsyProxy) | Proxy Tool | PHP | SOCKS proxy management panel | Mid-2000s |
+| 125 | [Update%20Maker](https://github.com/maestron/botnets/tree/master/VirusPack/Update%20Maker) | Utility | Various | Bot update package builder | Mid-2000s |
+| 126 | [g-spotv2.0](https://github.com/maestron/botnets/tree/master/VirusPack/g-spotv2.0) | Utility | Various | Bot configuration editor | Mid-2000s |
+
+---
+
+## Botnet Supplies Directory
+
+| # | Sample Name | Type | Description |
+|---|---|---|---|
+| 127 | [Botnet Supplies](https://github.com/maestron/botnets/tree/master/Botnet%20Supplies) | Support files | `Service pack 6.exe`, `cmands.html`, `sdk.exe` - utility/support files |
+
+---
+
+## Cross-Reference: Evolutionary Lineage
+
+The following chart shows the primary derivation relationships:
+
+```
+sdBot 0.4b (2002, by [sd])
+├── sdBot 0.5a/0.5b (2003)
+│   ├── spyBot 1.1–1.4 (2003-04, by Mich)
+│   ├── sdBot community mods (b0rg, skbot, xdcc, getadm)
+│   └── SDX/SBX OOP rewrites (2008)
+├── rBot 0.2a (2004, by Nils et al.)
+│   ├── rBot 0.3.x series
+│   └── rxBot 0.6.5+ (2005, by RacerX90)
+│       ├── rxBot named mods (EcLiPsE, Xerion, Undertow)
+│       ├── Urxbot / URX series
+│       ├── NZM series (restructured)
+│       ├── 120-series (2007, by BuZ) ← MySQL/VNC/MSSQL
+│       ├── CYBERBOT (stripped, stability)
+│       └── BlowSXT (transition documentation)
+│
+Agobot3 (2003, separate lineage)
+├── Phatbot (P2P WASTE, polymorphic)
+├── ForBot / ForBotSX
+└── litmus, OMEGA
+```
+
+---
+
+## Notes on Duplicates
+
+Approximately 110 directories in the original repository are exact or near-exact copies of other specimens (same source with minor config changes like IRC server addresses or bot nicknames). This inventory groups these under their representative variant. The total of **~127 entries** above represents the distinct, research-worthy specimens. The full 369-directory listing is available in the [original repository](https://github.com/maestron/botnets/tree/master/VirusPack).

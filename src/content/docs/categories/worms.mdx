@@ -1,0 +1,358 @@
+---
+title: "Worms & Spreading"
+description: "Self-propagating malware - IM worms, polymorphic engines, and P2P seeding vectors (mid-2000s)"
+sidebar:
+  order: 2
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="Educational Purpose">
+This page documents historical worm specimens for academic research purposes only.
+All specimens are from the publicly archived [MaestroN repository](https://github.com/maestron/botnets).
+Techniques described here are presented to inform defensive cybersecurity strategy.
+</Aside>
+
+## Overview: Self-Propagating Malware
+
+Worms are distinguished from other malware categories by their ability to **spread autonomously** without requiring botnet operator intervention. While IRC bots spread via exploit scanning (server-side propagation), the worms in this collection target **client-side vectors** - instant messaging contacts, P2P file sharing, email, and removable media.
+
+The collection contains six standalone worm specimens spanning multiple languages and propagation strategies:
+
+| Specimen | Language | Primary Vector | Unique Feature | Source |
+|----------|----------|----------------|----------------|--------|
+| **w32.ogw0rm** | C++ | 7 IM clients simultaneously | Broadest IM coverage in collection | [w32.ogw0rm](https://github.com/maestron/botnets/tree/master/VirusPack/w32.ogw0rm) |
+| **IrcWorm** | C++ | IRC DCC + custom RAR packer | Self-archiving for distribution | [IrcWorm](https://github.com/maestron/botnets/tree/master/VirusPack/IrcWorm) |
+| **wworm2 (WoodWorm)** | Delphi | BitTorrent seeding + polymorphic engine | First P2P seeding worm in collection | [wworm2](https://github.com/maestron/botnets/tree/master/VirusPack/wworm2) |
+| **T_Worm** | C++ | Yahoo IM in 5 languages | Multilingual social engineering | [T_Worm](https://github.com/maestron/botnets/tree/master/VirusPack/T_Worm) |
+| **IrcWorm (Delphi)** | Delphi | IRC channels | Delphi-based variant | [IrcWorm](https://github.com/maestron/botnets/tree/master/VirusPack/IrcWorm) |
+| **Sbot-RARSpreader** | C++ | RAR archive injection | Infects existing archives | [Sbot-RARSpreader](https://github.com/maestron/botnets/tree/master/VirusPack/Sbot-RARSpreader) |
+
+---
+
+## w32.ogw0rm: The Multi-Protocol IM Worm
+
+**Source:** [w32.ogw0rm](https://github.com/maestron/botnets/tree/master/VirusPack/w32.ogw0rm)
+
+This specimen represents the most **ambitious instant messaging worm** in the collection, capable of spreading through seven distinct IM clients simultaneously. In an era when IM was the dominant real-time communication platform, this approach maximized infection potential.
+
+### Targeted IM Clients
+
+| IM Client | Protocol | Window Detection Method | Market Share (2005) |
+|-----------|----------|------------------------|---------------------|
+| MSN Messenger | MSNP | Window class enumeration | ~25% |
+| AIM (AOL Instant Messenger) | OSCAR | Process detection | ~20% |
+| Yahoo! Messenger | YMSG | Window title matching | ~15% |
+| ICQ | OSCAR | Shared AIM detection | ~10% |
+| Trillian | Multi | Window class scan | ~8% |
+| mIRC | IRC/DCC | Window handle search | ~5% |
+| Xfire | Proprietary | Process enumeration | ~3% |
+
+### Spreading Mechanism (Pseudocode)
+
+```
+// w32.ogw0rm - multi-IM spreading logic
+function spread_to_all_im_clients():
+    // Phase 1: Detect which clients are running
+    for client in [MSN, AIM, Yahoo, ICQ, Trillian, mIRC, Xfire]:
+        handle = FindWindow(client.window_class, NULL)
+        if handle != NULL:
+            client.active = true
+
+    // Phase 2: For each active client, inject spread routine
+    for client in active_clients:
+        if client == MSN:
+            // Use OLE Automation to control MSN Messenger
+            msn = CreateObject("Messenger.UIAutomation")
+            contacts = msn.GetContactList()
+            for contact in contacts:
+                send_file(contact, worm_copy, enticing_filename)
+
+        elif client == AIM:
+            // Send message with download link to buddy list
+            aim_window = FindWindow("AIM_CONVERSATION", NULL)
+            send_keys(aim_window, lure_message + download_url)
+
+        elif client == Yahoo:
+            // Similar window automation approach
+            yahoo_send_to_contacts(worm_url)
+
+    // Phase 3: Copy to shared folders (P2P spreading)
+    copy_to_kazaa_shared()
+    copy_to_limewire_shared()
+```
+
+### Social Engineering Lures
+
+The worm used **context-aware messages** tailored to each platform - enticing filenames disguised as photos, games, or videos that a user's contacts would be likely to click:
+
+```
+// Example lure filenames (reconstructed from source)
+lure_files = [
+    "funny_pic.scr",          // .scr = screensaver, executes as .exe
+    "check_this_out.pif",     // .pif = program information file, executable
+    "naked_pics.exe",         // Direct executable with enticing name
+    "cool_game.com",          // .com extension, executable on Windows
+]
+```
+
+### MITRE ATT&CK Mapping - w32.ogw0rm
+
+| Technique | ID | Implementation |
+|-----------|----|----------------|
+| Replication Through Removable Media | T1091 | Copies to USB/shared drives |
+| Phishing | T1566 | Social engineering via IM contacts |
+| Application Layer Protocol | T1071.001 | IM protocols for spreading |
+| Masquerading | T1036.005 | Executable disguised with misleading filenames |
+| Boot or Logon Autostart Execution | T1547.001 | Registry Run key persistence |
+
+---
+
+## wworm2 (WoodWorm): Polymorphic Engine + Torrent Seeding
+
+**Source:** [wworm2](https://github.com/maestron/botnets/tree/master/VirusPack/wworm2)
+
+WoodWorm is the most **technically sophisticated worm** in the collection. Written in Delphi, it combines a polymorphic string encryption engine with BitTorrent-based distribution - making it unique among the specimens.
+
+### Polymorphic Engine (`polyengine.pas`)
+
+The `polyengine.pas` unit implements a multi-layer string obfuscation engine designed to defeat static analysis:
+
+```
+// WoodWorm polymorphic engine - conceptual reconstruction
+function CryptString(input, seed):
+    // Layer 1: Seeded XOR encryption
+    key = generate_key_from_seed(seed)
+    layer1 = xor_cipher(input, key)
+
+    // Layer 2: Base64 encoding
+    layer2 = base64_encode(layer1)
+
+    // Layer 3: Second XOR pass with different key
+    layer3 = xor_cipher(layer2, secondary_key)
+
+    return layer3
+
+// At runtime, the DECRYPT procedure reverses all layers
+procedure DECRYPT():
+    for each encrypted_string in config:
+        // Reverse Layer 3
+        temp = xor_decrypt(encrypted_string, secondary_key)
+        // Reverse Layer 2
+        temp = base64_decode(temp)
+        // Reverse Layer 1
+        plaintext = xor_decrypt(temp, primary_key)
+        store_in_memory(plaintext)
+```
+
+**Why this matters for defense:**
+
+| Analysis Method | Effectiveness Against WoodWorm |
+|-----------------|-------------------------------|
+| Static string extraction (`strings`) | ❌ All strings encrypted on disk |
+| Signature-based AV scanning | ❌ No plaintext indicators to match |
+| Import table analysis | ⚠️ Partial - Delphi uses some static imports |
+| Behavioral/sandbox analysis | ✅ Strings decrypted in memory at runtime |
+| Heuristic detection | ✅ Multi-layer decode routine is suspicious |
+
+### BitTorrent Seeding Vector (`utorrentseeder.pas`)
+
+WoodWorm's most innovative feature is its ability to **spread via the µTorrent BitTorrent client** - hijacking the victim's legitimate P2P software to distribute copies of the worm.
+
+```
+// WoodWorm torrent seeding - conceptual flow
+function seed_worm_via_torrent():
+    // Step 1: Locate µTorrent window
+    utorrent_hwnd = FindWindow("µTorrent", NULL)
+    if utorrent_hwnd == NULL:
+        return  // µTorrent not installed/running
+
+    // Step 2: Receive .torrent file URL from C&C server
+    torrent_url = get_from_cnc("torrent_seed_url")
+
+    // Step 3: Use UI automation to make µTorrent add the torrent
+    // Simulates keypresses: Ctrl+U (Add URL dialog)
+    SendKeys(utorrent_hwnd, CTRL + "U")
+    Sleep(500)
+
+    // Step 4: Type the torrent URL into the dialog
+    SendKeys(dialog_hwnd, torrent_url)
+    SendKeys(dialog_hwnd, ENTER)
+
+    // Result: µTorrent downloads and seeds a .torrent
+    // that points to a worm copy disguised as pirated content
+```
+
+**Propagation chain:**
+
+```
+┌─────────────┐    ┌──────────────┐    ┌─────────────────┐    ┌──────────────┐
+│ C&C provides │───▶│ Worm injects │───▶│ Victim's µTorrent│───▶│ Other P2P    │
+│ .torrent URL │    │ URL into     │    │ seeds worm copy  │    │ users download│
+│              │    │ µTorrent UI  │    │ to swarm         │    │ "pirated file"│
+└─────────────┘    └──────────────┘    └─────────────────┘    └──────────────┘
+```
+
+<Aside type="tip" title="Why BitTorrent Spreading Was Effective">
+By seeding through the victim's legitimate BitTorrent client, the worm's traffic was **indistinguishable from normal file sharing**. The worm copy appeared as a seeded file from a real user, inheriting their IP reputation. This made network-level detection extremely difficult.
+</Aside>
+
+### MITRE ATT&CK Mapping - WoodWorm
+
+| Technique | ID | Implementation |
+|-----------|----|----------------|
+| Obfuscated Files or Information | T1027 | Triple-layer polymorphic string encryption |
+| Ingress Tool Transfer | T1105 | Torrent file download from C&C |
+| User Execution: Malicious File | T1204.002 | Worm disguised as pirated content |
+| Application Layer Protocol | T1071.004 | BitTorrent P2P for distribution |
+| Software Discovery | T1518 | Detects µTorrent installation |
+
+---
+
+## T_Worm: Multilingual Social Engineering
+
+**Source:** [T_Worm](https://github.com/maestron/botnets/tree/master/VirusPack/T_Worm)
+
+T_Worm demonstrates **localization as an attack strategy**. It targets Yahoo! Messenger users with social engineering lures in five languages, maximizing its geographic reach.
+
+### Language Coverage
+
+| Language | Target Region | Lure Strategy |
+|----------|---------------|---------------|
+| English | US, UK, Australia | Photo/video sharing links |
+| French | France, Canada, Africa | Similar lure patterns |
+| German | Germany, Austria, Switzerland | Localized messages |
+| Spanish | Spain, Latin America | Regional vocabulary |
+| Dutch | Netherlands, Belgium | Localized content |
+
+### Spreading Logic
+
+```
+// T_Worm - multilingual Yahoo IM spreading
+function spread_yahoo():
+    // Detect system language from Windows locale
+    lang = GetUserDefaultLangID()
+
+    // Select appropriate lure message
+    switch(lang):
+        case LANG_ENGLISH:
+            msg = "LOL check out this photo of you!! {url}"
+        case LANG_FRENCH:
+            msg = "MDR regarde cette photo de toi!! {url}"
+        case LANG_GERMAN:
+            msg = "LOL schau dir das Foto von dir an!! {url}"
+        case LANG_SPANISH:
+            msg = "JAJA mira esta foto tuya!! {url}"
+        case LANG_DUTCH:
+            msg = "LOL kijk deze foto van jou!! {url}"
+        default:
+            msg = english_default  // Fallback
+
+    // Enumerate Yahoo Messenger contacts
+    contacts = enumerate_yahoo_contacts()
+    for contact in contacts:
+        send_yahoo_message(contact, msg)
+```
+
+### MITRE ATT&CK Mapping - T_Worm
+
+| Technique | ID | Implementation |
+|-----------|----|----------------|
+| Phishing | T1566 | Localized social engineering lures |
+| System Language Discovery | T1614.001 | Detects Windows locale for message selection |
+| Application Layer Protocol | T1071.001 | Yahoo Messenger protocol |
+| Masquerading | T1036 | Link disguised as photo sharing |
+
+---
+
+## IrcWorm: Self-Archiving Distribution
+
+**Source:** [IrcWorm](https://github.com/maestron/botnets/tree/master/VirusPack/IrcWorm)
+
+IrcWorm includes a **custom RAR packing mechanism** that archives the worm binary before distribution, providing a layer of obfuscation that bypasses file-type based scanning.
+
+### Distribution Strategy
+
+```
+// IrcWorm - archive-based spreading
+function spread_via_irc():
+    // Step 1: Create RAR archive containing the worm
+    worm_copy = get_self_path()
+    archive = create_rar_archive(worm_copy,
+        filename = "cool_pics.rar",
+        password = NULL)  // No password - maximize openability
+
+    // Step 2: Connect to IRC channels
+    for channel in target_channels:
+        join(channel)
+        // Step 3: Send archive via DCC
+        for user in channel.user_list:
+            dcc_send(user, archive)
+```
+
+### Why Archive Distribution Works
+
+1. **Bypasses file-type scanning** - Many early AV products didn't scan inside archives
+2. **Social engineering** - Users expect to receive archives via DCC file transfer
+3. **Compression** - Smaller file transfers complete faster, reducing detection window
+
+---
+
+## Spreading Vector Comparison
+
+| Vector | w32.ogw0rm | WoodWorm | T_Worm | IrcWorm | Sbot-RAR |
+|--------|:----------:|:--------:|:------:|:-------:|:--------:|
+| **MSN Messenger** | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **AIM** | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **Yahoo! Messenger** | ✅ | ❌ | ✅ | ❌ | ❌ |
+| **ICQ** | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **Trillian** | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **mIRC / IRC** | ✅ | ❌ | ❌ | ✅ | ❌ |
+| **Xfire** | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **BitTorrent (µTorrent)** | ❌ | ✅ | ❌ | ❌ | ❌ |
+| **RAR archive injection** | ❌ | ❌ | ❌ | ✅ | ✅ |
+| **Multilingual lures** | ❌ | ❌ | ✅ (5 langs) | ❌ | ❌ |
+| **Polymorphic engine** | ❌ | ✅ | ❌ | ❌ | ❌ |
+| **P2P shared folders** | ✅ | ✅ | ❌ | ❌ | ❌ |
+
+## Evasion Technique Comparison
+
+| Technique | w32.ogw0rm | WoodWorm | T_Worm | IrcWorm |
+|-----------|:----------:|:--------:|:------:|:-------:|
+| **String encryption** | Basic XOR | Triple-layer polymorphic | None evident | None evident |
+| **File masquerading** | .scr/.pif/.com extensions | Pirated content disguise | URL shortening | RAR archive wrapping |
+| **Traffic blending** | Looks like normal IM | Indistinguishable from BitTorrent | Normal Yahoo messages | Normal IRC DCC |
+| **Anti-AV** | Process kill list | Encrypted indicators | Minimal | Minimal |
+
+---
+
+## Defensive Lessons from Worm Analysis
+
+### Why Worms Were Effective (2004-2008)
+
+1. **Trusted context** - Messages came from a victim's real contacts, establishing implicit trust
+2. **Protocol diversity** - Spreading across 7+ protocols meant no single network filter could stop all vectors
+3. **User interaction dependency** - Worms exploited human behavior (curiosity, trust) more than software vulnerabilities
+4. **Traffic blending** - Worm traffic was indistinguishable from legitimate IM/P2P usage
+
+### Modern Defensive Controls
+
+| Historical Vector | Modern Equivalent | Defense |
+|-------------------|-------------------|---------|
+| IM worms (MSN, AIM) | Teams/Slack/Discord messages | URL scanning, file-type restrictions |
+| P2P torrent seeding | Compromised software repos | Supply chain verification, code signing |
+| Multilingual lures | Multilingual phishing campaigns | AI-based content analysis |
+| Archive wrapping | Password-protected ZIP phishing | Sandboxed archive detonation |
+
+<Aside type="note" title="Historical Context">
+The IM worm era ended not because defenses improved, but because the IM platforms themselves disappeared. MSN Messenger shut down in 2013, AIM in 2017, Yahoo Messenger in 2018. Modern equivalents (Teams, Slack, Discord) have built-in URL scanning and file-type restrictions that make the exact techniques documented here less effective - though the social engineering principles remain unchanged.
+</Aside>
+
+---
+
+## Further Reading
+
+- [Cross-Platform Bots](/botnet-research-archive/categories/cross-platform/) - Java and PHP bots that also leveraged non-Windows vectors
+- [rBot/rxBot Family](/botnet-research-archive/families/rbot-rxbot/) - IRC bots that incorporated IM spreading as a secondary vector
+- [Defensive Lessons](/botnet-research-archive/analysis/defensive-lessons/) - How these techniques informed modern security
+- [Master Inventory](/botnet-research-archive/reference/inventory/) - Full collection catalog

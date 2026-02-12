@@ -1,0 +1,205 @@
+---
+title: "About This Project"
+description: "Academic disclaimer, methodology, project purpose, and contribution guidelines"
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Project Overview
+
+The **Botnet Research Archive** is an educational documentation project that provides structured, academic analysis of historical botnet source code from the mid-2000s era (approximately 2002–2009). The project catalogues, classifies, and analyzes approximately 250 unique malware specimens drawn from the publicly archived [maestron/botnets](https://github.com/maestron/botnets) repository on GitHub.
+
+This documentation site transforms raw source code into a structured educational resource by:
+
+- **Cataloguing** all specimens with consistent metadata (family, language, capabilities, era)
+- **Classifying** specimens by family lineage, showing evolutionary relationships
+- **Mapping** observed techniques to the [MITRE ATT&CK](https://attack.mitre.org/) framework
+- **Contextualizing** each specimen within the broader history of cybersecurity threats
+- **Extracting** defensive lessons applicable to modern security practice
+
+---
+
+<Aside type="danger" title="Academic Disclaimer">
+
+**This project is strictly educational.** It exists to support university-level coursework in cybersecurity, malware analysis, digital forensics, and computer science.
+
+- **No malicious intent.** This documentation is created solely for academic study and defensive security research.
+- **No binaries are hosted or distributed.** This site contains only analysis, commentary, and documentation - not executable code.
+- **No execution was performed.** All analysis is based on static source-level review. No malware was compiled, executed, or deployed at any stage of this project.
+- **No encouragement of illegal activity.** The techniques described here are documented to help defenders understand threats, not to enable attacks.
+- **Historical specimens only.** All analyzed code dates from 2002–2009. The vulnerabilities exploited (DCOM, LSASS, ASN.1, etc.) were patched over 15 years ago.
+
+This project follows the same academic principles as university courses that study historical malware (e.g., Carnegie Mellon's "Malware Analysis" course, Georgia Tech's "Malware Analysis and Defense," and similar programs worldwide).
+
+</Aside>
+
+---
+
+## Methodology
+
+### Approach: Source-Level Static Analysis
+
+All analysis in this project was conducted through **source-level static analysis** - reading and interpreting source code without compilation or execution. This approach:
+
+1. **Eliminates risk** - no malware is ever run
+2. **Provides deeper insight** - source code reveals intent and implementation details that binary analysis often cannot
+3. **Enables educational transparency** - every observation can be verified by examining the cited source files
+
+### Analysis Process
+
+Each specimen was analyzed through the following steps:
+
+1. **Identification** - Determine family membership, version, author attribution (from comments/headers), and compilation requirements
+2. **Capability Mapping** - Enumerate all functional modules (C&C, spreading, DDoS, stealing, persistence, evasion)
+3. **MITRE ATT&CK Mapping** - Map each identified capability to the corresponding ATT&CK technique ID
+4. **CVE Identification** - Identify any exploited vulnerabilities by matching exploit code against known CVE entries
+5. **Lineage Analysis** - Determine derivation relationships between specimens through code comparison, author comments, and changelog analysis
+6. **Defensive Extraction** - Identify detection signatures, behavioral indicators, and defensive countermeasures
+
+### What This Project Does NOT Do
+
+- **No dynamic analysis** - No specimens were executed in sandboxes, VMs, or any other environment
+- **No network testing** - No exploit code was tested against live or simulated targets
+- **No binary production** - No source code was compiled into executable form
+- **No vulnerability research** - No new vulnerabilities were discovered or disclosed
+- **No tool development** - No offensive tools were created based on the analyzed code
+
+---
+
+## How to Use This Resource
+
+### For Students
+
+This archive is designed to supplement university coursework in:
+
+- **Malware Analysis** - Study real-world malware architecture, code structure, and implementation patterns
+- **Network Security** - Understand botnet C&C protocols (IRC, HTTP, P2P), DDoS techniques, and network-based detection methods
+- **Operating Systems** - Examine how malware interacts with the Windows API, process management, registry, and file system
+- **Software Engineering** - Observe how open-source collaboration dynamics played out in the malware ecosystem (forking, modular architecture, version control patterns)
+- **Digital Forensics** - Learn what artifacts these specimens create (registry keys, mutexes, file paths, network signatures)
+
+**Suggested study path:**
+1. Start with the [Evolution Timeline](/botnet-research-archive/analysis/evolution-timeline) for historical context
+2. Read the [rBot/rxBot Family](/botnet-research-archive/families/rbot-rxbot) page to understand the dominant codebase
+3. Compare with [Zeus](/botnet-research-archive/families/zeus) to see the paradigm shift from IRC to HTTP C&C
+4. Review the [MITRE ATT&CK Mapping](/botnet-research-archive/analysis/mitre-attack) to connect specimens to standardized technique taxonomy
+5. Study the [Defensive Lessons](/botnet-research-archive/analysis/defensive-lessons) to understand the security implications
+
+### For Researchers
+
+- The [Complete Inventory](/botnet-research-archive/reference/inventory) provides a comprehensive specimen catalogue with links to original source code
+- Family pages document evolutionary lineage and code derivation relationships
+- The [Bibliography](/botnet-research-archive/reference/bibliography) provides entry points into the academic literature
+- MITRE ATT&CK mappings enable integration with threat intelligence workflows
+
+### For Educators
+
+- The modular page structure allows assigning individual families or categories as course readings
+- The [Glossary](/botnet-research-archive/reference/glossary) provides consistent terminology for classroom use
+- The evolutionary lineage analysis (sdBot → rBot → rxBot) provides a compelling case study in software evolution
+- The IRC-vs-HTTP C&C comparison offers a concrete example of architectural trade-offs
+- The hydra-2008.1 specimen provides a documented IoT botnet precursor for discussions of emerging threats
+
+---
+
+## Project Architecture
+
+This documentation site is built with:
+
+- **[Astro](https://astro.build/)** - Static site generator
+- **[Starlight](https://starlight.astro.build/)** - Documentation theme for Astro
+- **Markdown** - Content format with Starlight component extensions
+
+### Site Structure
+
+```
+docs/
+├── families/          # Major botnet family deep-dives
+│   ├── rbot-rxbot     # The dominant IRC bot family
+│   ├── sdbot-spybot   # The foundational IRC bot family
+│   ├── phatbot-agobot # P2P botnet with polymorphic engine
+│   ├── zeus           # HTTP-based banking trojan
+│   └── other-families # Smaller families (NZM, AkBot, etc.)
+├── categories/        # Cross-family category pages
+│   ├── exploit-packs  # Drive-by download frameworks
+│   ├── worms          # Standalone propagation malware
+│   ├── rats           # Remote access trojans
+│   ├── stealers-crypters # Credential theft & AV evasion
+│   ├── cross-platform # Java, PHP, Perl specimens
+│   └── ddos-iot       # DDoS tools & IoT precursors
+├── analysis/          # Cross-cutting analytical topics
+│   ├── evolution-timeline # Chronological development
+│   ├── irc-vs-http    # C&C protocol comparison
+│   ├── mitre-attack   # ATT&CK technique mapping
+│   ├── cve-mapping    # Exploited vulnerability catalogue
+│   ├── malware-economy # Underground economics
+│   └── defensive-lessons # Detection & prevention
+└── reference/         # Reference materials
+    ├── inventory      # Complete specimen table
+    ├── glossary       # Term definitions
+    ├── bibliography   # Academic references
+    └── about          # This page
+```
+
+---
+
+## Credits & Acknowledgments
+
+### Source Material
+The source code specimens analyzed in this project are archived in the [maestron/botnets](https://github.com/maestron/botnets) repository on GitHub. This documentation project is an independent academic analysis and is not affiliated with the repository maintainer.
+
+### Documentation Framework
+- **[Astro](https://astro.build/)** by the Astro team
+- **[Starlight](https://starlight.astro.build/)** by the Astro team - documentation theme
+
+### Research Methodology
+Analysis follows established academic practices for malware research:
+- Source-level static analysis without execution
+- MITRE ATT&CK framework for technique classification
+- CVE mapping for vulnerability identification
+- Family lineage analysis through code comparison
+
+### Academic Context
+This project was developed as part of university-level cybersecurity education. The analytical approach draws on methodologies established by:
+- Sikorski & Honig, *Practical Malware Analysis* (2012)
+- The Honeynet Project's botnet research (2005)
+- MITRE Corporation's ATT&CK framework
+
+---
+
+## Contributing
+
+This is an educational project and welcomes contributions that improve its academic value:
+
+### What We Welcome
+- **Corrections** - Factual errors in family attribution, version dating, or capability descriptions
+- **Additional context** - Historical information about specimens, author attribution, or deployment history
+- **Improved ATT&CK mappings** - More precise technique ID assignments
+- **Bibliography additions** - Relevant academic papers, industry reports, or primary sources
+- **Accessibility improvements** - Better explanations, diagrams, or cross-references
+
+### What We Do Not Accept
+- Contributions that encourage or facilitate malicious use
+- New malware samples or executable code
+- Exploit development or weaponization content
+- Content that identifies or targets specific victims
+
+---
+
+## Legal Notice
+
+<Aside type="caution" title="Legal Information">
+
+This documentation project is provided for **educational and research purposes only** under principles of academic freedom and security research.
+
+**Copyright:** The documentation text on this site is original academic commentary. The source code specimens referenced are hosted in a third-party repository and are not distributed by this project.
+
+**No warranty:** This documentation is provided "as is" without warranty of any kind. The authors make no guarantees about the completeness or accuracy of the analysis.
+
+**Responsible use:** Users of this resource are expected to comply with all applicable laws and regulations in their jurisdiction. The analysis of malware source code for educational purposes is generally protected under academic freedom principles, but local laws vary.
+
+**No liability:** The authors of this documentation accept no liability for any misuse of the information presented. This resource is intended exclusively for defensive security education.
+
+**Reporting concerns:** If you believe any content on this site is inaccurate, inappropriate, or raises legal concerns, please open an issue in the project repository.
+
+</Aside>

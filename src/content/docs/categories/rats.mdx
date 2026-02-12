@@ -1,0 +1,353 @@
+---
+title: "Remote Access Trojans"
+description: "FBIRAT, AryanRat - full surveillance platforms with webcam, keylogging, and NAT traversal"
+sidebar:
+  order: 3
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="Educational Purpose">
+This page documents historical Remote Access Trojan specimens for academic research purposes only.
+All specimens are from the publicly archived [MaestroN repository](https://github.com/maestron/botnets).
+Techniques described here are presented to inform defensive cybersecurity strategy.
+</Aside>
+
+## Overview: RATs vs. Bots - A Fundamental Distinction
+
+Remote Access Trojans (RATs) and IRC bots share superficial similarities - both provide remote control over compromised machines. However, they represent fundamentally different operational paradigms:
+
+| Characteristic | IRC Bots (rBot, sdBot) | RATs (FBIRAT, AryanRat) |
+|----------------|------------------------|-------------------------|
+| **Scale** | Thousands of machines simultaneously | Individual targets, one-at-a-time interaction |
+| **C&C Model** | Many-to-one channel (IRC) | One-to-one direct connection (reverse TCP) |
+| **Operator Interaction** | Text commands broadcast to swarm | GUI-based, interactive per-victim |
+| **Primary Purpose** | DDoS, spam, spreading | Surveillance, espionage, data theft |
+| **Automation** | Highly automated (scan, spread, attack) | Operator-intensive, manual exploration |
+| **Victim Relationship** | Anonymous mass - victims are "bots" | Targeted - operator watches in real-time |
+| **GUI** | None (CLI/IRC) | Rich graphical client with live dashboards |
+
+Conceptually, an IRC bot treats each victim as a **unit of computing power** (for DDoS, scanning, or spam). A RAT treats each victim as a **surveillance subject** to be individually monitored, explored, and exploited.
+
+The collection contains three RAT specimens:
+
+| Specimen | Language | Key Innovation | Source |
+|----------|----------|----------------|--------|
+| **FBIRAT** | C++ | Full surveillance suite (webcam + screen + keylog + sniffer) | [FBIRAT](https://github.com/maestron/botnets/tree/master/VirusPack/FBIRAT) |
+| **AryanRat** | C++ | UPnP NAT traversal for bind-shell connectivity | [AryanRat](https://github.com/maestron/botnets/tree/master/VirusPack/AryanRat) |
+
+---
+
+## FBIRAT: The Complete Surveillance Platform
+
+**Source:** [FBIRAT](https://github.com/maestron/botnets/tree/master/VirusPack/FBIRAT)
+
+FBIRAT represents a **full-featured surveillance platform** combining multiple data collection capabilities into a single implant. The name is ironic - the FBI was the primary law enforcement agency pursuing authors of such tools during this era.
+
+### Capability Architecture
+
+```
+┌───────────────────────────────────────────────────────┐
+│                    FBIRAT Server (Victim)              │
+├────────────┬──────────────┬──────────────┬────────────┤
+│  Webcam    │  Screen      │  Keylogger   │  Packet    │
+│  Capture   │  Capture     │  Module      │  Sniffer   │
+│            │              │              │            │
+│ Captures   │ Periodic or  │ Hooks kbd    │ Captures   │
+│ frames via │ on-demand    │ input via    │ raw packets│
+│ DirectShow │ screenshots  │ SetWindowsHook│ via raw   │
+│ / VFW APIs │ via GDI+     │ Ex (WH_KEY..)│ sockets   │
+├────────────┴──────────────┴──────────────┴────────────┤
+│               Reverse TCP Connection Manager           │
+│  Connects back to operator's IP:port on startup        │
+└───────────────────────────────────────────────────────┘
+         │                                     ▲
+         ▼                                     │
+┌───────────────────────────────────────────────────────┐
+│                 FBIRAT Client (Attacker GUI)           │
+├───────────────────────────────────────────────────────┤
+│  • Live webcam viewer     • File manager               │
+│  • Screen viewer          • Process manager             │
+│  • Keylog viewer          • Registry editor             │
+│  • Packet capture viewer  • Remote shell                │
+│  • System information     • Connection manager          │
+└───────────────────────────────────────────────────────┘
+```
+
+### Module Deep Dive
+
+#### 1. Webcam Capture
+
+```
+// FBIRAT webcam capture - conceptual logic
+function start_webcam_capture():
+    // Uses Video for Windows (VFW) or DirectShow API
+    capture_handle = capCreateCaptureWindow(
+        "CaptureWindow", WS_CHILD, 0, 0, 320, 240, parent, 0)
+
+    // Connect to first available capture device
+    capDriverConnect(capture_handle, device_index=0)
+
+    // Set capture parameters
+    capPreviewRate(capture_handle, fps=5)  // 5 frames per second
+
+    // Capture loop
+    while connected:
+        frame = capGrabFrame(capture_handle)
+        compressed = compress_jpeg(frame, quality=30)  // Low quality for bandwidth
+        send_to_operator(compressed)
+        sleep(200)  // ~5 FPS
+```
+
+**Defensive detection points:**
+- Unexpected access to `avicap32.dll` (VFW) or DirectShow COM objects
+- Outbound data streams with periodic, consistent packet sizes (compressed frames)
+- Process accessing webcam device when no user-initiated video application is running
+
+#### 2. Screen Capture
+
+```
+// FBIRAT screen capture - conceptual logic
+function capture_screen():
+    // Get screen dimensions
+    hdc_screen = GetDC(NULL)  // NULL = entire screen
+    width = GetSystemMetrics(SM_CXSCREEN)
+    height = GetSystemMetrics(SM_CYSCREEN)
+
+    // Create compatible DC and bitmap
+    hdc_mem = CreateCompatibleDC(hdc_screen)
+    hbitmap = CreateCompatibleBitmap(hdc_screen, width, height)
+    SelectObject(hdc_mem, hbitmap)
+
+    // Copy screen to memory
+    BitBlt(hdc_mem, 0, 0, width, height, hdc_screen, 0, 0, SRCCOPY)
+
+    // Compress and transmit
+    compressed = compress_to_jpeg(hbitmap)
+    send_to_operator(compressed)
+```
+
+#### 3. Keylogger
+
+```
+// FBIRAT keylogger - conceptual logic
+function install_keylogger():
+    // Set a low-level keyboard hook
+    hook = Set​Windows​HookEx(
+        WH_KEYBOARD_LL,      // Low-level keyboard hook
+        keylog_callback,      // Our callback function
+        GetModuleHandle(NULL),
+        0                     // All threads
+    )
+
+    // Callback captures every keystroke
+    function keylog_callback(nCode, wParam, lParam):
+        if nCode >= 0:
+            key_info = cast(lParam, KBDLLHOOKSTRUCT)
+            key_char = MapVirtualKey(key_info.vkCode, MAPVK_VK_TO_CHAR)
+
+            // Log with window title context
+            window_title = GetWindowText(GetForegroundWindow())
+            log_entry = format("[%s] %c", window_title, key_char)
+
+            append_to_log(log_entry)
+            send_to_operator_periodic(log_buffer)
+
+        return CallNextHookEx(hook, nCode, wParam, lParam)
+```
+
+<Aside type="note" title="Window Title Context">
+Notice that the keylogger captures the **active window title** alongside each keystroke. This provides the attacker with context - they can see that keystrokes "admin123" were typed into a window titled "Bank of America - Login" rather than into a word processor. This context transforms raw keystrokes into actionable intelligence.
+</Aside>
+
+#### 4. Packet Sniffer
+
+The packet sniffer module uses **raw sockets** to capture network traffic on the victim's machine - essentially running a stripped-down packet capture tool (similar in concept to tcpdump or Wireshark) on the compromised host.
+
+```
+// FBIRAT packet sniffer - conceptual logic
+function start_sniffer():
+    // Create a raw socket that receives all IP packets
+    raw_sock = socket(AF_INET, SOCK_RAW, IPPROTO_IP)
+    bind(raw_sock, local_interface, 0)
+
+    // Enable promiscuous mode via SIO_RCVALL
+    ioctl(raw_sock, SIO_RCVALL, SIO_RCVALL_ON)
+
+    // Capture loop - filter for interesting protocols
+    while active:
+        packet = recv(raw_sock, buffer_size)
+        ip_header = parse_ip(packet)
+
+        if ip_header.protocol == TCP:
+            tcp_header = parse_tcp(packet)
+            // Look for cleartext credentials
+            if tcp_header.dst_port in [21, 23, 25, 80, 110, 143]:
+                // FTP, Telnet, SMTP, HTTP, POP3, IMAP - cleartext protocols
+                log_packet(packet)
+                send_to_operator(packet)
+```
+
+### FBIRAT MITRE ATT&CK Mapping
+
+| Technique | ID | FBIRAT Implementation |
+|-----------|----|----------------------|
+| Video Capture | T1125 | Webcam streaming via VFW/DirectShow |
+| Screen Capture | T1113 | GDI+ screen capture and compression |
+| Input Capture: Keylogging | T1056.001 | `Set​Windows​HookEx(WH_KEYBOARD_LL)` |
+| Network Sniffing | T1040 | Raw socket promiscuous mode capture |
+| Application Layer Protocol | T1071.001 | Reverse TCP for C2 communication |
+| System Information Discovery | T1082 | OS, hardware, user enumeration |
+| File and Directory Discovery | T1083 | Remote file browser |
+| Process Discovery | T1057 | Remote process manager |
+| Query Registry | T1012 | Remote registry editor |
+| Command and Scripting Interpreter | T1059.003 | Remote command shell |
+
+### Data Flow Architecture
+
+```
+┌─────────── Victim Machine ───────────┐     ┌──── Attacker ────┐
+│                                       │     │                   │
+│  [Webcam]─────┐                       │     │   ┌───────────┐  │
+│  [Screen]─────┤                       │     │   │  FBIRAT   │  │
+│  [Keylog]─────┼──▶ [Reverse TCP] ────────────▶  │  Client   │  │
+│  [Sniffer]────┤    Connection         │     │   │  (GUI)    │  │
+│  [Files]──────┘    (port XXXXX)       │     │   └───────────┘  │
+│                                       │     │                   │
+│  Firewall typically allows outbound ──┘     │  Listens on port  │
+│  connections (reverse shell advantage)      │  for connections  │
+└───────────────────────────────────────┘     └───────────────────┘
+```
+
+---
+
+## AryanRat: UPnP NAT Traversal
+
+**Source:** [AryanRat](https://github.com/maestron/botnets/tree/master/VirusPack/AryanRat)
+
+AryanRat's most significant technical innovation is its use of **UPnP (Universal Plug and Play) for automatic NAT traversal** - solving one of the fundamental connectivity challenges for bind-shell RATs.
+
+### The NAT Problem
+
+By the mid-2000s, most home users were behind NAT routers. This created a problem for RAT operators:
+
+| Connection Model | How It Works | NAT Problem |
+|-----------------|--------------|-------------|
+| **Bind shell** | Victim listens on a port; attacker connects in | ❌ NAT blocks inbound connections |
+| **Reverse shell** | Victim connects out to attacker's IP | ✅ Outbound connections traverse NAT |
+| **UPnP traversal** | Victim tells router to forward a port via UPnP | ✅ Creates a port mapping automatically |
+
+### UPnP Port Forwarding (Pseudocode)
+
+```
+// AryanRat UPnP NAT traversal - conceptual logic
+function setup_upnp_forwarding():
+    // Step 1: Discover UPnP-enabled router via SSDP
+    // Send M-SEARCH multicast to 239.255.255.250:1900
+    ssdp_request = """
+    M-SEARCH * HTTP/1.1
+    Host: 239.255.255.250:1900
+    Man: "ssdp:discover"
+    MX: 3
+    ST: urn:schemas-upnp-org:device:InternetGatewayDevice:1
+    """
+    send_multicast(ssdp_request)
+    router_url = parse_ssdp_response()
+
+    // Step 2: Get router's control URL
+    device_description = http_get(router_url)
+    control_url = parse_xml(device_description, "controlURL")
+
+    // Step 3: Request port forwarding via SOAP
+    soap_request = """
+    <AddPortMapping>
+        <NewRemoteHost></NewRemoteHost>           <!-- Any external IP -->
+        <NewExternalPort>{RAT_PORT}</NewExternalPort>
+        <NewProtocol>TCP</NewProtocol>
+        <NewInternalPort>{RAT_PORT}</NewInternalPort>
+        <NewInternalClient>{LOCAL_IP}</NewInternalClient>
+        <NewEnabled>1</NewEnabled>
+        <NewPortMappingDescription>System</NewPortMappingDescription>
+        <NewLeaseDuration>0</NewLeaseDuration>    <!-- Permanent -->
+    </AddPortMapping>
+    """
+    http_post(control_url, soap_request)
+
+    // Step 4: Now the attacker can connect directly
+    // External:RAT_PORT → Router → Victim:RAT_PORT
+    listen_on_port(RAT_PORT)
+```
+
+### Why UPnP Traversal Was Significant
+
+1. **Bind-shell without networking knowledge** - Attacker didn't need to instruct victim to configure port forwarding manually
+2. **Stealth** - The UPnP port mapping appears as a legitimate device request; most routers log it identically to a gaming console or VoIP phone requesting port forwarding
+3. **Persistence** - With `LeaseDuration=0`, the port mapping persists until the router reboots or the mapping is manually deleted
+4. **Widely exploitable** - UPnP was enabled by default on most consumer routers of this era (and many still today)
+
+<Aside type="tip" title="Modern UPnP Security">
+The UPnP attack vector demonstrated by AryanRat led to widespread security recommendations to **disable UPnP on consumer routers**. In 2013, the "Unplug Don't Play" research by Rapid7 found 81 million unique IPs responding to UPnP discovery requests from the internet. The technique remains relevant - modern IoT malware still exploits UPnP for NAT traversal.
+</Aside>
+
+### AryanRat MITRE ATT&CK Mapping
+
+| Technique | ID | AryanRat Implementation |
+|-----------|----|------------------------|
+| Exploitation of Remote Services | T1210 | UPnP SOAP request for port forwarding |
+| Non-Standard Port | T1571 | RAT listens on non-standard port |
+| System Network Configuration Discovery | T1016 | Discovers local IP and gateway via UPnP |
+| Network Service Discovery | T1046 | SSDP multicast discovery of UPnP devices |
+| Proxy: Multi-hop Proxy | T1090.003 | NAT router used as implicit proxy via port forward |
+
+---
+
+## RAT vs. Bot: Capability Comparison
+
+| Capability | FBIRAT (RAT) | AryanRat (RAT) | rxBot (IRC Bot) | sdBot (IRC Bot) |
+|------------|:------------:|:--------------:|:----------------:|:----------------:|
+| **Webcam capture** | ✅ Live stream | ❌ | ❌ | ❌ |
+| **Screen capture** | ✅ Live stream | ✅ | ✅ (snapshot) | ❌ |
+| **Keylogging** | ✅ Real-time | ✅ | ✅ (to IRC) | ✅ (spyBot) |
+| **Packet sniffing** | ✅ Full capture | ❌ | ✅ ("Carnivore") | ❌ |
+| **File manager** | ✅ GUI browser | ✅ | ❌ (CLI only) | ❌ |
+| **Process manager** | ✅ GUI list | ✅ | ✅ (kill only) | ❌ |
+| **Registry editor** | ✅ GUI editor | ✅ | ❌ | ❌ |
+| **Remote shell** | ✅ Interactive | ✅ | ✅ (via IRC) | ✅ |
+| **DDoS** | ❌ | ❌ | ✅ (6+ methods) | ✅ |
+| **Exploit scanning** | ❌ | ❌ | ✅ (12+ exploits) | ❌ |
+| **Self-spreading** | ❌ | ❌ | ✅ (IM/P2P/USB) | ✅ (P2P/IM) |
+| **UPnP NAT traversal** | ❌ | ✅ | ❌ | ❌ |
+| **Simultaneous victims** | Limited (GUI) | Limited (GUI) | Thousands (IRC) | Thousands (IRC) |
+| **GUI operator interface** | ✅ Rich GUI | ✅ Rich GUI | ❌ (IRC text) | ❌ (IRC text) |
+
+---
+
+## Historical RAT Evolution Context
+
+The RATs in this collection represent the **first generation** of commodity RATs (mid-2000s). Understanding where they sit in the broader timeline:
+
+| Generation | Era | Examples | Key Innovation |
+|------------|-----|----------|----------------|
+| **1st Gen** | 1998-2002 | Back Orifice, SubSeven, NetBus | Proved concept of remote GUI control |
+| **2nd Gen** | 2003-2007 | **FBIRAT, AryanRat**, Bifrost | Webcam/audio, NAT traversal, encryption |
+| **3rd Gen** | 2008-2014 | DarkComet, Poison Ivy, njRAT | Plugin architectures, DDNS C2, mobile |
+| **4th Gen** | 2015+ | Cobalt Strike, Meterpreter, Quasar | Memory-only, fileless, commercial red team |
+
+### Defensive Legacy
+
+The RAT specimens in this collection drove several defensive innovations:
+
+1. **Webcam indicator lights** - Hardware LED activation on camera access (partially a response to RAT surveillance concerns)
+2. **Host-based behavior monitoring** - Detecting `Set​Windows​HookEx` calls for keylogging, raw socket creation for sniffing
+3. **UPnP security hardening** - Industry recommendations to disable UPnP by default
+4. **Outbound connection monitoring** - Detecting reverse-shell callbacks to unknown IPs
+5. **Application-level firewalls** - Per-process network access control
+
+---
+
+## Further Reading
+
+- [rBot/rxBot Family](/botnet-research-archive/families/rbot-rxbot/) - IRC bots with some overlapping capabilities (keylog, sniffer)
+- [DDoS Bots & IoT](/botnet-research-archive/categories/ddos-iot/) - The other end of the spectrum - mass-scale, automated attack tools
+- [MITRE ATT&CK Mapping](/botnet-research-archive/analysis/mitre-attack/) - Complete technique mapping across all specimens
+- [Defensive Lessons](/botnet-research-archive/analysis/defensive-lessons/) - How these specimens informed modern endpoint protection

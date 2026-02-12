@@ -1,0 +1,229 @@
+---
+title: "MITRE ATT&CK Mapping"
+description: "All techniques mapped to the MITRE ATT&CK framework"
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="note">
+This reference compiles every MITRE ATT&CK technique identified across all research documents. Organized by tactic (kill chain phase), it maps each technique to the specific specimens that implement it. Research documents 03 (exploit packs/IoT/evasion) and 04 (sdBot lineage) provided the richest ATT&CK references.
+</Aside>
+
+## Introduction
+
+The MITRE ATT&CK framework provides a standardized taxonomy for adversary behavior. This page maps the techniques observed across all specimen families in the collection, demonstrating how attack patterns evolved from simple bot commands in 2002 to sophisticated multi-stage operations by 2009.
+
+Each entry includes the ATT&CK technique ID, name, implementing specimens, and a brief description of how the technique manifests in the source code.
+
+---
+
+## Reconnaissance (TA0043)
+
+| ID | Technique | Specimens | Description |
+|----|-----------|-----------|-------------|
+| **T1592** | Gather Victim Host Information | IcePack, Fragus, Fiesta3 | Exploit kits fingerprint victim browser, OS, installed plugins, and geographic location via GeoIP database before selecting exploits |
+| **T1590** | Gather Victim Network Information | hydra-2008.1, rBot, 120-Series | Network scanning modules probe IP ranges for open ports and vulnerable services; Hydra scans `/16` ranges for Telnet/HTTP |
+
+---
+
+## Resource Development (TA0042)
+
+| ID | Technique | Specimens | Description |
+|----|-----------|-----------|-------------|
+| **T1587** | Develop Capabilities | SDX.amk, Zeus builder, DynastryCrypter | OOP framework development (SDX); commercial toolkit development (Zeus); licensed crypter product development |
+| **T1587.001** | Develop Capabilities: Malware | Zeus builder, iStealer builder | Builder tools that compile custom bot binaries with operator-specified configurations |
+| **T1608.002** | Stage Capabilities: Upload Tool | iStealer, exploit kits | Builder creates deployment-ready payloads; exploit kits stage payloads on infrastructure for victim download |
+| **T1583** | Acquire Infrastructure | Zeus panel, Fragus, IcePack | PHP/MySQL web panels deployed on compromised or bulletproof hosting; domain registration for C2 |
+
+---
+
+## Initial Access (TA0001)
+
+| ID | Technique | Specimens | Description |
+|----|-----------|-----------|-------------|
+| **T1190** | Exploit Public-Facing Application | pBot (implied), exploit kits | pBot deployed on web servers compromised via CMS vulnerabilities; exploit kits installed on compromised websites |
+| **T1189** | Drive-by Compromise | IcePack, Fragus, Fiesta3, my_poly_sploit | All exploit kits deliver payloads via browser exploitation when victims visit compromised/malicious websites |
+| **T1110.001** | Brute Force: Password Guessing | hydra-2008.1, rBot, rxBot, 120-Series, sdBot | Telnet brute-force (Hydra); NetBIOS brute-force with ~80+ password dictionary (IRC bots); VNC/MySQL/MSSQL brute-force (120-Series) |
+| **T1078** | Valid Accounts | hydra-2008.1 | Exploitation of default credentials on D-Link routers |
+| **T1091** | Replication Through Removable Media | Java Botnet (USBSpread.java), Darkness Bot, worms | USB-based spreading: copy payload to removable drive with auto-execution configuration |
+
+---
+
+## Execution (TA0002)
+
+| ID | Technique | Specimens | Description |
+|----|-----------|-----------|-------------|
+| **T1059.003** | Command and Scripting Interpreter: Windows Command Shell | rBot, rxBot, NZM, 120-Series, Java Botnet | Remote shell access via IRC commands; `CommandPromptServer.java` in Java Botnet provides interactive command prompt |
+| **T1059.004** | Command and Scripting Interpreter: Unix Shell | pBot, hydra-2008.1 | pBot's `cmd`/`exec` functions execute shell commands on web servers; Hydra executes `wget`/`chmod` on router shells |
+| **T1059.007** | Command and Scripting Interpreter: JavaScript | Fiesta3 | JavaScript embedded in dynamically generated PDFs triggers heap spray and exploit chain |
+| **T1204.002** | User Execution: Malicious File | Fiesta3, wworm2, iStealer | PDF exploitation (Fiesta); torrent-distributed worm copies disguised as media (wworm2); bound file social engineering (iStealer) |
+| **T1211** | Exploitation for Client Execution | IcePack, Fragus, Fiesta3 | Browser and plugin exploitation to achieve code execution on victim machines |
+| **T1106** | Native API | rxBot, Zeus | rxBot's dynamic DLL loading (`LoadLibrary`/`GetProcAddress`); Zeus's `wininet.dll` hooking for Man-in-the-Browser |
+
+---
+
+## Persistence (TA0003)
+
+| ID | Technique | Specimens | Description |
+|----|-----------|-----------|-------------|
+| **T1547.001** | Boot or Logon Autostart Execution: Registry Run Keys | sdBot, SpyBot, rBot, rxBot, NZM, 120-Series | All IRC bots use `HKLM\...\Run` or `RunServices` registry keys; later variants use multiple keys for redundancy |
+| **T1543.003** | Create or Modify System Process: Windows Service | rxBot, NZM, 120-Series | Bot installs itself as a Windows service for elevated persistence |
+| **T1505.003** | Server Software Component: Web Shell | pBot | PHP bot running on compromised web servers; persistent as long as the PHP file exists in the web root |
+
+---
+
+## Privilege Escalation (TA0004)
+
+| ID | Technique | Specimens | Description |
+|----|-----------|-----------|-------------|
+| **T1055** | Process Injection | DynastryCrypter, Zeus | Crypter stubs use `CreateProcess` → `Virtual​Alloc​Ex` → `Write​Process​Memory` → `Create​Remote​Thread` injection chain; Zeus injects into browser processes |
+| **T1014** | Rootkit | Reptile (FU rootkit driver) | FU rootkit driver provides kernel-mode process hiding - removes bot process from kernel process list |
+
+---
+
+## Defense Evasion (TA0005)
+
+| ID | Technique | Specimens | Description |
+|----|-----------|-----------|-------------|
+| **T1027** | Obfuscated Files or Information | wworm2, Phatbot, SDX, DynastryCrypter, iStealer, 120-Series | Multi-layer encryption: XOR → Base64 → XOR (wworm2); PE section encryption with random algorithms (Phatbot); XOR config encryption (SDX); commercial crypter encryption; bound file obfuscation (iStealer); full string encryption (120-Series) |
+| **T1027.002** | Obfuscated Files: Software Packing | DynastryCrypter, SPKRYPT | Commercial packers/crypters that encrypt PE files to evade AV signatures |
+| **T1140** | Deobfuscate/Decode Files or Information | Fragus, wworm2, SDX, Zeus | Runtime decryption of encrypted configuration and strings; Zeus RC4-decrypts config at startup |
+| **T1562.001** | Impair Defenses: Disable or Modify Tools | rBot, rxBot, NZM, 120-Series | AV process killing; hosts file modification to block AV update servers (e.g., `127.0.0.1 update.symantec.com`) |
+| **T1562.004** | Impair Defenses: Disable or Modify System Firewall | rxBot, 120-Series | Windows Firewall bypass/disable; SP2 patcher re-enables exploitable services disabled by Windows XP Service Pack 2 |
+| **T1070.006** | Indicator Removal: Timestomp | rBot, rxBot, 120-Series | Self-copy sets hidden/system/readonly attributes + modifies file timestamps to match legitimate system files |
+| **T1036** | Masquerading | rxBot, 120-Series | Bot-killer uses whitelist of 300+ legitimate Windows executables; CTCP camouflage responds with fake IRC client strings (mIRC, BitchX, xchat, irssi, eggdrop) |
+| **T1480** | Execution Guardrails | IcePack, Fragus | GeoIP-based targeting: kit checks victim country against allow/block list before serving exploits; avoids researcher/LE IP ranges |
+
+---
+
+## Credential Access (TA0006)
+
+| ID | Technique | Specimens | Description |
+|----|-----------|-----------|-------------|
+| **T1056.001** | Input Capture: Keylogging | SpyBot, rxBot, NZM, 120-Series, Zeus | `Set​Windows​HookEx`-based keylogging (SpyBot, rxBot); output to dedicated IRC channels; Zeus captures all form input via API hooking |
+| **T1555** | Credentials from Password Stores | SpyBot, rxBot, Zeus | Browser saved passwords, FTP client credentials, cached Windows credentials |
+| **T1555.003** | Credentials from Password Stores: Web Browsers | Java Botnet (Firefox.java), rxBot, Zeus | Firefox profile extraction (Java Botnet); Protected Storage dump for IE (rxBot); form grabbing via API hooks (Zeus) |
+| **T1552.001** | Unsecured Credentials: Credentials in Files | rxBot, 120-Series | FTP client credential theft: ServU, WS_FTP, GS-FTP, NetTerm config file parsing |
+| **T1539** | Steal Web Session Cookie | Zeus | Captures IE cookies via Protected Storage and API hooking |
+| **T1528** | Steal Application Access Token | Zeus | Certificate theft via `getcerts` command; TAN/signing key theft from European banks |
+| **T1557** | Adversary-in-the-Middle | Zeus (Man-in-the-Browser) | Hooks `wininet.dll` between SSL decryption and page rendering; injects HTML/JS into banking pages after HTTPS decryption |
+
+---
+
+## Discovery (TA0007)
+
+| ID | Technique | Specimens | Description |
+|----|-----------|-----------|-------------|
+| **T1082** | System Information Discovery | sdBot, rBot, rxBot, Zeus | `sysinfo` command returns OS version, CPU, memory, uptime; Zeus collects OS distribution statistics per bot |
+| **T1083** | File and Directory Discovery | Fragus, Zeus | Kit backend manages payload files; Zeus panel provides file browsing of victim uploads |
+| **T1016** | System Network Configuration Discovery | rBot, rxBot, Zeus | Network adapter enumeration; NAT detection (`ip.php`); Zeus tracks whether bots are behind NAT |
+| **T1057** | Process Discovery | 120-Series | Bot-killer enumerates all running processes against whitelist of legitimate executables |
+
+---
+
+## Lateral Movement (TA0008)
+
+| ID | Technique | Specimens | Description |
+|----|-----------|-----------|-------------|
+| **T1021.002** | Remote Services: SMB/Windows Admin Shares | rBot, rxBot, SpyBot, Java Botnet | NetBIOS brute-force spreading via Windows file shares using password dictionaries |
+| **T1021.004** | Remote Services: SSH | hydra-2008.1 (Telnet equivalent) | Telnet brute-force access to router management interfaces |
+| **T1080** | Taint Shared Content | SpyBot, wworm2 | Copy worm to Kazaa shared folders (SpyBot); seed torrent copies via µTorrent (wworm2) |
+| **T1570** | Lateral Tool Transfer | rBot, rxBot, 120-Series | Built-in TFTP/FTP/HTTP servers for transferring bot binary to newly compromised hosts |
+
+---
+
+## Collection (TA0009)
+
+| ID | Technique | Specimens | Description |
+|----|-----------|-----------|-------------|
+| **T1005** | Data from Local System | SpyBot, rxBot, Zeus | Cached password extraction; CD key theft (Half-Life, CS, UT2003, BF1942, NWN, CoD, NFS, FIFA, C&C Generals); certificate theft |
+| **T1113** | Screen Capture | rxBot, FBIRAT | Real-time screen capture with output to IRC channels |
+| **T1125** | Video Capture | FBIRAT | Webcam capture capability |
+| **T1185** | Man in the Browser | Zeus | `wininet.dll` hooking captures all HTTP/HTTPS traffic including POST data, form fields, and banking sessions |
+
+---
+
+## Command and Control (TA0011)
+
+| ID | Technique | Specimens | Description |
+|----|-----------|-----------|-------------|
+| **T1071.001** | Application Layer Protocol: Web Protocols | Zeus, exploit kit panels | Zeus uses HTTP POST to `gate.php`; exploit kit admin panels communicate via HTTP |
+| **T1071.004** | Application Layer Protocol: P2P | SpyBot (spreading), Phatbot (C2) | SpyBot spreads via P2P networks; Phatbot uses WASTE P2P mesh for decentralized C2 |
+| **T1095** | Non-Application Layer Protocol | sdBot, SpyBot, rBot, rxBot, NZM, 120-Series, hydra-2008.1 | IRC protocol for C2 - the dominant pattern across the collection |
+| **T1102.002** | Web Service: Bidirectional Communication | Phatbot (WASTE) | P2P mesh network provides bidirectional command broadcast with no central server |
+| **T1573.001** | Encrypted Channel: Symmetric Cryptography | BlowSXT, Zeus | Blowfish encryption for IRC C2 (BlowSXT); RC4 encryption with MD5 integrity for HTTP C2 (Zeus) |
+| **T1573.002** | Encrypted Channel: Asymmetric Cryptography | Phatbot | RSA-signed commands for authentication within P2P mesh |
+| **T1568.002** | Dynamic Resolution: DNS | sdBot, AkBot | C2 servers identified by DNS hostname (changeable); AkBot uses DNS SRV records for C2 resolution |
+| **T1008** | Fallback Channels | sdBot 0.5b, rBot, rxBot | Backup IRC server configuration; if primary fails, bot connects to secondary |
+| **T1090** | Proxy | rxBot, 120-Series, Zeus | SOCKS4/5 proxy, HTTP redirect proxy, rlogin daemon (rxBot); `sockslist.php` exports bot SOCKS proxy list (Zeus) |
+| **T1104** | Multi-Stage Channels | hydra-2008.1 | Two-stage infection: x86 scanner finds targets → forces router to download MIPSEL payload via `wget` |
+
+---
+
+## Exfiltration (TA0010)
+
+| ID | Technique | Specimens | Description |
+|----|-----------|-----------|-------------|
+| **T1041** | Exfiltration Over C2 Channel | sdBot, SpyBot, rBot, rxBot, Zeus | All specimens exfiltrate data over their C2 channel - IRC messages (bots) or HTTP POST (Zeus) |
+| **T1048** | Exfiltration Over Alternative Protocol | iStealer | Stolen credentials sent to attacker-configured PHP logger URL (HTTP POST to separate infrastructure) |
+| **T1105** | Ingress Tool Transfer | sdBot, rBot, rxBot, hydra-2008.1 | `download` command fetches additional payloads; Hydra's `wget`-based payload download to routers |
+
+---
+
+## Impact (TA0040)
+
+| ID | Technique | Specimens | Description |
+|----|-----------|-----------|-------------|
+| **T1498** | Network Denial of Service | sdBot, rBot, rxBot, NZM, 120-Series, hydra-2008.1, pBot | SYN, TCP, ICMP, UDP, SuperSYN, ACK floods; pBot leverages high-bandwidth server connections for powerful DDoS |
+| **T1499** | Endpoint Denial of Service | rBot, rxBot | Bot-killer terminates competing malware processes; system lockdown removes shares and disables DCOM |
+| **T1565** | Data Manipulation | Zeus | Web injects modify banking pages in real-time - adds fake form fields, alters displayed balances, redirects transactions |
+| **T1529** | System Shutdown/Reboot | Zeus | `reboot`, `kos` (kill OS), `shutdown` commands available via panel |
+
+---
+
+## Technique Heatmap by Family
+
+The following table shows which major families implement techniques in each tactic category. Darker shading indicates more techniques in that category.
+
+| Family | Recon | Init. Access | Execution | Persistence | Priv. Esc. | Def. Evasion | Cred. Access | Discovery | Lat. Movement | Collection | C2 | Exfil | Impact |
+|--------|-------|-------------|-----------|-------------|------------|-------------|-------------|-----------|---------------|------------|-----|-------|--------|
+| **sdBot** | | | Low | Low | | | | Low | Low | | IRC | Low | DDoS |
+| **SpyBot** | | | Low | Low | | | **Med** | Low | **Med** | Low | IRC | Low | DDoS |
+| **rBot/rxBot** | | Low | **Med** | **Med** | | **Med** | **Med** | **Med** | **Med** | **Med** | IRC | **Med** | DDoS |
+| **NZM** | | Low | **Med** | **Med** | | **Med** | **Med** | Low | **Med** | Low | IRC | Low | DDoS |
+| **120-Series** | | **Med** | **Med** | **Med** | | **High** | **Med** | **Med** | **Med** | Low | IRC | Low | DDoS |
+| **Phatbot** | | | Low | Low | | **High** | | | | | **P2P+IRC** | Low | DDoS |
+| **Zeus** | | | Low | Low | **Med** | **Med** | **High** | **Med** | | **High** | **HTTP** | **Med** | **High** |
+| **Exploit Kits** | **High** | **High** | **Med** | | | **Med** | | | | | HTTP | | |
+| **Hydra** | **Med** | **Med** | Low | | | | | | | | IRC | Low | DDoS |
+| **Stealers** | | | Low | | | **Med** | **High** | | | **Med** | HTTP | **Med** | |
+| **Crypters** | | | | | **Med** | **High** | | | | | | | |
+
+---
+
+## Evolutionary Observations
+
+### Technique Accumulation Over Time
+
+| Era | Typical Technique Count | New Tactics Added |
+|-----|------------------------|-------------------|
+| **2002 (sdBot)** | ~5 | Basic: C2, persistence, DoS, download |
+| **2003 (SpyBot)** | ~10 | + Credential access, lateral movement (IM/P2P) |
+| **2004 (rxBot)** | ~20 | + Defense evasion, discovery, multiple exploits |
+| **2005 (NZM)** | ~25 | + Organized evasion, more exploit modules |
+| **2007 (120-Series)** | ~30 | + Advanced evasion (encryption, bot-killer, SP2 patching) |
+| **2007–2009 (Exploit Kits)** | ~10 (specialized) | + Reconnaissance, execution guardrails, client-side exploitation |
+| **2009 (Zeus)** | ~25 (specialized) | + MitB, data manipulation, structured exfiltration, impact commands |
+
+### Key Patterns
+
+1. **Defense evasion techniques grew fastest** - From zero techniques in sdBot to 6+ in the 120-Series, reflecting the arms race with AV vendors
+2. **Credential access diversified** - From none (sdBot) to keylogging (SpyBot) to multi-source harvesting (rxBot) to real-time browser hooking (Zeus)
+3. **C2 evolved from simple to resilient** - Single IRC server → backup servers → encrypted IRC → P2P mesh → HTTP polling
+4. **Initial access shifted** - From network exploits (server-side, wormable) to client-side exploitation (drive-by downloads via exploit kits)
+5. **Collection became structured** - From dumping text to IRC channels to searchable MySQL databases with typed data categories
+
+<Aside type="tip">
+For the specific CVEs behind the Initial Access techniques, see [CVE Mapping Reference](/botnet-research-archive/analysis/cve-mapping/).
+For defensive responses to these techniques, see [Defensive Lessons Learned](/botnet-research-archive/analysis/defensive-lessons/).
+</Aside>
